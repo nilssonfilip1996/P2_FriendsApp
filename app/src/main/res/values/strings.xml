@@ -1,0 +1,9 @@
+<resources>
+    <string name="google_maps_api_key">AIzaSyAFGJNG7lmjUjogb8C4jB2yv_KEihbdy1A</string>
+    <string name="app_name">FriendsInTheWorld</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="enter_a_name_for_the_group">Enter a name for the group</string>
+    <string name="commit">Commit</string>
+</resources>
