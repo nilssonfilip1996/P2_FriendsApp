@@ -79,11 +79,15 @@ public class TCPConnection extends Service{
             String result;
             try {
                 while (receive != null) {
+                    //Log.d(TAG, "run: receiving...");
                     //result = (String) input.readObject();
                     result = (String)dataIS.readUTF();
+                    //result = String.valueOf(dataIS.readChar());
                     receiveBuffer.put(result);
+                    Log.d(TAG, "run: received!!!"+ result);
                 }
             } catch (Exception e) { // IOException, ClassNotFoundException
+                Log.d(TAG, "Receiverun: exception: "+e);
                 receive = null;
             }
         }
@@ -109,6 +113,7 @@ public class TCPConnection extends Service{
                 Log.d(TAG, "run: CONNECTED");
             } catch (Exception e) { // SocketException, UnknownHostException
                 //exception = e;
+                Log.d(TAG, "run: "+ e);
                 //receiveBuffer.put("EXCEPTION");
             }
         }
@@ -116,6 +121,7 @@ public class TCPConnection extends Service{
 
     private class Disconnect implements Runnable {
         public void run() {
+            Log.d(TAG, "run: DISCONNECTING!!!");
             try {
                 if (dataIS != null)
                     dataIS.close();
@@ -141,10 +147,12 @@ public class TCPConnection extends Service{
 
         public void run() {
             try {
+                Log.d(TAG, "run: Sending...");
                 dataOS.writeUTF(message);
                 dataOS.flush();
+                Log.d(TAG, "run: SENT!!!");
             } catch (IOException e) {
-                //exception = e;
+                Log.d(TAG, "run: exception: " + e);
                 //receiveBuffer.put("EXCEPTION");
             }
         }

@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ChatFragmentClasses.ChatFragment;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses.ManageGroupsFragment;
@@ -57,7 +58,7 @@ public class GroupController {
         }
         //Get ref to TCPConnection service.
         getTCPConnection();
-        currentUser = new User("Filip", "","");
+        currentUser = new User("Clas", "","");
         //initManageGroupsFragment();
     }
 
@@ -81,7 +82,7 @@ public class GroupController {
             Log.d(TAG, "connection: " + String.valueOf(tcpConnection!=null));
             receiveListener = new ReceiveListener();
             receiveListener.start();
-            //tcpConnection.sendMessage("blabla");
+            tcpConnection.sendMessage("blabla");
             tcpConnection.sendMessage(JSONHandler.createJSONRegisterGroup("losamigos", currentUser.getName()));
             tcpConnection.sendMessage(JSONHandler.createJSONRequestCurrentGroups());
             /*bound = true;
@@ -126,6 +127,15 @@ public class GroupController {
                 JSONArray jsonArray;
                 String type = jsonObject.getString(JSONHandler.KEY_TYPE);
                 switch(type){
+                    case(JSONHandler.TYPE_EXCEPTION):
+                        groupActivity.runOnUiThread(()-> {
+                            try {
+                                Toast.makeText(groupActivity, "Exception! " + jsonObject.getString(JSONHandler.KEY_MESSAGE), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                        break;
                     case(JSONHandler.TYPE_REGISTER):
                         //FOR VG, a user can be part of multiple groups. TBC
                         currentUser.setGroupName(jsonObject.getString(JSONHandler.KEY_GROUP));
@@ -169,7 +179,7 @@ public class GroupController {
                 try {
                     message = tcpConnection.receive();
                     Log.d(TAG, "run: incoming: "+message);
-                    processIncMessage();
+                    //processIncMessage();
                     //JSONObject jsonObject = null;
                     /*JSONObject jsonObject = new JSONObject(message);
                     Log.d(TAG, "run: JSON: "+ jsonObject.toString());
@@ -183,4 +193,5 @@ public class GroupController {
             }
         }
     }
+
 }

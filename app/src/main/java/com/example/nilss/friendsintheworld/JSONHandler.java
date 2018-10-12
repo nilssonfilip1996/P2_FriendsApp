@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 public class JSONHandler {
+    public static final String TYPE_EXCEPTION = "exception";
     public static final String TYPE_REGISTER = "register";
     public static final String TYPE_UNREGISTER = "unregister";
     public static final String TYPE_MEMBERS = "members";
@@ -21,6 +22,7 @@ public class JSONHandler {
     public static final String KEY_GROUPS = "groups";
     public static final String KEY_GROUP_ID = "id";
     public static final String KEY_MEMBERS = "members";
+    public static final String KEY_MESSAGE = "message";
     public static final String KEY_LOCATION = "location";
     public static final String KEY_LONGITUDE = "longitude";
     public static final String KEY_LATITUDE = "latitude";
