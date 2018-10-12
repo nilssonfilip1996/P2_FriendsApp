@@ -84,7 +84,7 @@ public class TCPConnection extends Service{
                     result = (String)dataIS.readUTF();
                     //result = String.valueOf(dataIS.readChar());
                     receiveBuffer.put(result);
-                    Log.d(TAG, "run: received!!!"+ result);
+                    //Log.d(TAG, "run: received!!!"+ result);
                 }
             } catch (Exception e) { // IOException, ClassNotFoundException
                 Log.d(TAG, "Receiverun: exception: "+e);
@@ -147,10 +147,10 @@ public class TCPConnection extends Service{
 
         public void run() {
             try {
-                Log.d(TAG, "run: Sending...");
+                //Log.d(TAG, "run: Sending...");
                 dataOS.writeUTF(message);
                 dataOS.flush();
-                Log.d(TAG, "run: SENT!!!");
+                //Log.d(TAG, "run: SENT!!!");
             } catch (IOException e) {
                 Log.d(TAG, "run: exception: " + e);
                 //receiveBuffer.put("EXCEPTION");

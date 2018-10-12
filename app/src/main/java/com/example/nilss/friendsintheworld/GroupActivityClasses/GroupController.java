@@ -22,6 +22,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class GroupController {
     private static final String TAG = "GroupController";
     private int fragmentContainer;
@@ -34,6 +36,7 @@ public class GroupController {
     private TCPConnection tcpConnection;
     private ServiceConn serviceConn;
     private User currentUser;
+    private ArrayList<String> currentGroupsList;
 
     public GroupController(GroupActivity groupActivity, int fragmentContainer, Bundle savedInstanceState) {
         this.groupActivity = groupActivity;
@@ -58,12 +61,19 @@ public class GroupController {
         }
         //Get ref to TCPConnection service.
         getTCPConnection();
-        currentUser = new User("Clas", "","");
-        //initManageGroupsFragment();
+        currentUser = new User("Filip", "","");
+        initManageGroupsFragment();
     }
 
     private void initManageGroupsFragment() {
         //init recyclerview with available groups
+        currentGroupsList = new ArrayList<>();
+        manageGroupsFragment.setGroupController(this);
+        currentGroupsList.add("test1");
+        currentGroupsList.add("test2");
+        manageGroupsFragment.onInit(()->{
+            manageGroupsFragment.updateList(currentGroupsList);
+        });
     }
 
     //get ref to tcp service
@@ -82,7 +92,7 @@ public class GroupController {
             Log.d(TAG, "connection: " + String.valueOf(tcpConnection!=null));
             receiveListener = new ReceiveListener();
             receiveListener.start();
-            tcpConnection.sendMessage("blabla");
+            //tcpConnection.sendMessage("blabla");
             tcpConnection.sendMessage(JSONHandler.createJSONRegisterGroup("losamigos", currentUser.getName()));
             tcpConnection.sendMessage(JSONHandler.createJSONRequestCurrentGroups());
             /*bound = true;
@@ -112,6 +122,14 @@ public class GroupController {
             currentTag = tag;
         }
         return currentTag;
+    }
+
+    public void send(String type,String values){
+
+    }
+
+    public void addGroup(String s) {
+
     }
 
     private class ReceiveListener extends Thread {
@@ -157,9 +175,15 @@ public class GroupController {
                     case(JSONHandler.TYPE_GROUPS):
                         //update recyclerview on availablegroups
                         jsonArray = jsonObject.getJSONArray(JSONHandler.KEY_GROUPS);
+                        currentGroupsList.clear();
                         for(int i=0; i<jsonArray.length();i++){
-                            Log.d(TAG, "processIncMessage: group"+String.valueOf(i)+" = "+jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP));
+                            //Log.d(TAG, "processIncMessage: group"+String.valueOf(i)+" = "+jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP));
+                            currentGroupsList.add(jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP));
                         }
+                        groupActivity.runOnUiThread(()->{
+                            manageGroupsFragment.updateList(currentGroupsList);
+                        });
+
                         break;
                     case(JSONHandler.TYPE_LOCATION):
                         //probably not doing anything here
@@ -179,7 +203,7 @@ public class GroupController {
                 try {
                     message = tcpConnection.receive();
                     Log.d(TAG, "run: incoming: "+message);
-                    //processIncMessage();
+                    processIncMessage();
                     //JSONObject jsonObject = null;
                     /*JSONObject jsonObject = new JSONObject(message);
                     Log.d(TAG, "run: JSON: "+ jsonObject.toString());
