@@ -26,6 +26,8 @@ import java.util.ArrayList;
 
 public class GroupController {
     private static final String TAG = "GroupController";
+    private static final String groupFragmentTag = "manageGroup";
+    private static final String chatFragmentTag = "chat";
     private int fragmentContainer;
     private FragmentManager fragmentManager;
     private GroupActivity groupActivity;
@@ -37,6 +39,7 @@ public class GroupController {
     private ServiceConn serviceConn;
     private User currentUser;
     private ArrayList<String> currentGroupsList;
+    private boolean bound = false;
 
     public GroupController(GroupActivity groupActivity, int fragmentContainer, Bundle savedInstanceState) {
         this.groupActivity = groupActivity;
@@ -48,16 +51,17 @@ public class GroupController {
             manageGroupsFragment = new ManageGroupsFragment();
             chatFragment = new ChatFragment();
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            ft.add(fragmentContainer,chatFragment,"chat");
+            ft.add(fragmentContainer,chatFragment,chatFragmentTag);
             ft.hide(chatFragment);
-            ft.add(fragmentContainer,manageGroupsFragment,"manageGroup");
+            ft.add(fragmentContainer,manageGroupsFragment,groupFragmentTag);
             ft.show(manageGroupsFragment);
             ft.commit();
+            currentTag=groupFragmentTag;
         }
         else{
             Log.d(TAG, "GroupController: savedInstance NOT null");
-            manageGroupsFragment = (ManageGroupsFragment)fragmentManager.findFragmentByTag("manageGroup");
-            chatFragment = (ChatFragment)fragmentManager.findFragmentByTag("chat");
+            manageGroupsFragment = (ManageGroupsFragment)fragmentManager.findFragmentByTag(groupFragmentTag);
+            chatFragment = (ChatFragment)fragmentManager.findFragmentByTag(chatFragmentTag);
         }
         //Get ref to TCPConnection service.
         getTCPConnection();
@@ -69,8 +73,6 @@ public class GroupController {
         //init recyclerview with available groups
         currentGroupsList = new ArrayList<>();
         manageGroupsFragment.setGroupController(this);
-        currentGroupsList.add("test1");
-        currentGroupsList.add("test2");
         manageGroupsFragment.onInit(()->{
             manageGroupsFragment.updateList(currentGroupsList);
         });
@@ -89,28 +91,34 @@ public class GroupController {
         public void onServiceConnected(ComponentName arg0, IBinder binder) {
             TCPConnection.LocalService ls = (TCPConnection.LocalService) binder;
             tcpConnection = ls.getService();
+            bound = true; //service bound
             Log.d(TAG, "connection: " + String.valueOf(tcpConnection!=null));
             receiveListener = new ReceiveListener();
             receiveListener.start();
-            //tcpConnection.sendMessage("blabla");
-            tcpConnection.sendMessage(JSONHandler.createJSONRegisterGroup("losamigos", currentUser.getName()));
-            tcpConnection.sendMessage(JSONHandler.createJSONRequestCurrentGroups());
-            /*bound = true;
-            listener = new Listener();
-            listener.start();*/
+            send(JSONHandler.TYPE_GROUPS, null);
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
-            /*bound = false;*/
+            bound = false;
         }
     }
     //unbind service when activity is destroyed
     public void onDestroy() {
-        groupActivity.unbindService(serviceConn);
+        if(bound){
+            groupActivity.unbindService(serviceConn);
+            receiveListener.stopListener();
+            bound = false;
+        }
+    }
+    public void groupInListClicked(String groupName){
+        Log.d(TAG, "groupInListClicked: " + groupName);
+        show(chatFragmentTag);
 
     }
+
+
     //switch active fragment.
-    public String show(String tag) {
+    public void show(String tag) {
         Fragment fragment = fragmentManager.findFragmentByTag(tag);
         Fragment currentFragment = fragmentManager.findFragmentByTag(currentTag);
         if(fragment!=null) {
@@ -121,15 +129,17 @@ public class GroupController {
             ft.commit();
             currentTag = tag;
         }
-        return currentTag;
     }
 
-    public void send(String type,String values){
-
+    public void send(String type,String[] values){
+        String JSONString = JSONHandler.createJsonString(type,values);
+        tcpConnection.sendMessage(JSONString);
     }
 
     public void addGroup(String s) {
-
+        send(JSONHandler.TYPE_REGISTER, new String[]{s,currentUser.getName()});
+        send(JSONHandler.TYPE_GROUPS, null);
+        //tcpConnection.sendMessage(JSONHandler.createJSONRequestCurrentGroups());
     }
 
     private class ReceiveListener extends Thread {

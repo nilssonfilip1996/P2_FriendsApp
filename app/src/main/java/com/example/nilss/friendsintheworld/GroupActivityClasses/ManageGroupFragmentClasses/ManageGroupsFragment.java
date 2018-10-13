@@ -74,7 +74,7 @@ public class ManageGroupsFragment extends Fragment {
             public void onItemClicked(int position) {
                 //group in list clicked!
                 Log.d(TAG, "onItemClicked: " + currentGroupsList.get(position));
-                //groupController.incomeListClicked(mArrayList.get(position));
+                groupController.groupInListClicked(currentGroupsList.get(position));
             }
         });
     }

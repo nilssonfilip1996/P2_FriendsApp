@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.StringWriter;
 
-public class JSONHandler {
+public final class JSONHandler {
     public static final String TYPE_EXCEPTION = "exception";
     public static final String TYPE_REGISTER = "register";
     public static final String TYPE_UNREGISTER = "unregister";
@@ -34,15 +34,39 @@ public class JSONHandler {
         return jsonArray;
     }
 
+    public static String createJsonString(String type, String[] fields){
+        String jsonString = "";
+        switch(type){
+            case(JSONHandler.TYPE_REGISTER):
+                jsonString = createJSONRegisterGroup(fields);
+                break;
+            case(JSONHandler.TYPE_UNREGISTER):
+                jsonString = createJSONDeRegisterGroup(fields);
+                break;
+            case(JSONHandler.TYPE_MEMBERS):
+                jsonString = createJSONRequestMembersInGroup(fields);
+                break;
+            case(JSONHandler.TYPE_GROUPS):
+                //just send an empty string array for this case.
+                jsonString = createJSONRequestCurrentGroups();
+                break;
+            case(JSONHandler.TYPE_LOCATION):
+                jsonString = createJSONSetCurrentPosition(fields);
+                break;
 
-    public static String createJSONRegisterGroup(String groupName, String memberName) {
+        }
+        return jsonString;
+    }
+
+
+    public static String createJSONRegisterGroup(String[] fields) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter writer = new JsonWriter( stringWriter );
         try {
             writer.beginObject()
                     .name("type").value(TYPE_REGISTER)
-                    .name("group").value(groupName)
-                    .name("member").value(memberName)
+                    .name("group").value(fields[0])
+                    .name("member").value(fields[1])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,13 +74,13 @@ public class JSONHandler {
         return stringWriter.toString();
     }
 
-    public static String createJSONDeRegisterGroup(String groupName, String id) {
+    public static String createJSONDeRegisterGroup(String[] fields) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter writer = new JsonWriter( stringWriter );
         try {
             writer.beginObject()
                     .name("type").value(TYPE_UNREGISTER)
-                    .name("ID").value(id)
+                    .name("ID").value(fields[0])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,13 +88,13 @@ public class JSONHandler {
         return stringWriter.toString();
     }
 
-    public static String createJSONRequestMembersInGroup(String groupName) {
+    public static String createJSONRequestMembersInGroup(String[] fields) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter writer = new JsonWriter( stringWriter );
         try {
             writer.beginObject()
                     .name("type").value(TYPE_MEMBERS)
-                    .name("group").value(groupName)
+                    .name("group").value(fields[0])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();
@@ -91,15 +115,15 @@ public class JSONHandler {
         return stringWriter.toString();
     }
 
-    public static String createJSONSetCurrentPosition(String id, String longitude, String latitude) {
+    public static String createJSONSetCurrentPosition(String[] fields) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter writer = new JsonWriter( stringWriter );
         try {
             writer.beginObject()
                     .name("type").value(TYPE_LOCATION)
-                    .name("id").value(id)
-                    .name("longitude").value(longitude)
-                    .name("latitude").value(latitude)
+                    .name("id").value(fields[0])
+                    .name("longitude").value(fields[1])
+                    .name("latitude").value(fields[2])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();
