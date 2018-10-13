@@ -16,6 +16,9 @@ public final class JSONHandler {
     public static final String TYPE_GROUPS = "groups";
     public static final String TYPE_LOCATION = "location";
     public static final String TYPE_LOCATIONS = "locations";
+    public static final String TYPE_TEXTCHAT = "textchat";
+    public static final String TYPE_IMAGECHAT = "imagechat";
+    public static final String TYPE_UPLOAD = "upload";
 
     public static final String KEY_TYPE = "type";
     public static final String KEY_GROUP = "group";

@@ -14,9 +14,8 @@ import android.widget.Toast;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ChatFragmentClasses.ChatFragment;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses.ManageGroupsFragment;
 import com.example.nilss.friendsintheworld.JSONHandler;
-import com.example.nilss.friendsintheworld.MainActivity;
 import com.example.nilss.friendsintheworld.TCPConnection;
-import com.example.nilss.friendsintheworld.User;
+import com.example.nilss.friendsintheworld.Pojos.User;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,7 +64,7 @@ public class GroupController {
         }
         //Get ref to TCPConnection service.
         getTCPConnection();
-        currentUser = new User("Filip", "","");
+        currentUser = new User("Filip", new ArrayList<String>(),new ArrayList<String>());
         initManageGroupsFragment();
     }
 
@@ -112,6 +111,7 @@ public class GroupController {
     }
     public void groupInListClicked(String groupName){
         Log.d(TAG, "groupInListClicked: " + groupName);
+        addGroup(groupName);
         show(chatFragmentTag);
 
     }
@@ -123,8 +123,10 @@ public class GroupController {
         Fragment currentFragment = fragmentManager.findFragmentByTag(currentTag);
         if(fragment!=null) {
             FragmentTransaction ft = fragmentManager.beginTransaction();
-            if(currentFragment!=null)
+            if(currentFragment!=null) {
                 ft.hide(currentFragment);
+                Log.d(TAG, "show: hiding: "+currentTag);
+            }
             ft.show(fragment);
             ft.commit();
             currentTag = tag;
@@ -139,7 +141,6 @@ public class GroupController {
     public void addGroup(String s) {
         send(JSONHandler.TYPE_REGISTER, new String[]{s,currentUser.getName()});
         send(JSONHandler.TYPE_GROUPS, null);
-        //tcpConnection.sendMessage(JSONHandler.createJSONRequestCurrentGroups());
     }
 
     private class ReceiveListener extends Thread {
@@ -166,15 +167,15 @@ public class GroupController {
                         break;
                     case(JSONHandler.TYPE_REGISTER):
                         //FOR VG, a user can be part of multiple groups. TBC
-                        currentUser.setGroupName(jsonObject.getString(JSONHandler.KEY_GROUP));
-                        currentUser.setGroupID(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
+                        currentUser.addGroupName(jsonObject.getString(JSONHandler.KEY_GROUP));
+                        currentUser.addGroupID(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
+                        Log.d(TAG, "processIncMessage: " + currentUser.toString());
                         //Show on the UI which group they currently belong to
-                        Log.d(TAG, "processIncMessage: group: " + currentUser.getGroupID());
+                        //Log.d(TAG, "processIncMessage: group: " + currentUser.getGroupID());
                         break;
                     case(JSONHandler.TYPE_UNREGISTER):
-                        //update the users currentgroup to be null.
-                        currentUser.setGroupName("");
-                        currentUser.setGroupID("");
+                        //remove group from users current groups.
+                        currentUser.removeGroup(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
                         //Show on the UI which group they currently belong to
                         break;
                     case(JSONHandler.TYPE_MEMBERS):
@@ -183,6 +184,7 @@ public class GroupController {
 
                         break;
                     case(JSONHandler.TYPE_GROUPS):
+                        //----->update users currentgroups here<------
                         //update recyclerview on availablegroups
                         jsonArray = jsonObject.getJSONArray(JSONHandler.KEY_GROUPS);
                         currentGroupsList.clear();
