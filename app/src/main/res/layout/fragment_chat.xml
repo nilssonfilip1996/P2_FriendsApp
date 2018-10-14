@@ -36,29 +36,50 @@
         android:layout_height="400dp"/>
 
     <LinearLayout
+        android:id="@+id/linear2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/chatRecyclerView"
         app:layout_constraintStart_toStartOf="parent">
 
-        <EditText
-            android:id="@+id/inputMsgetv"
+        <LinearLayout
+            android:id="@+id/linear3"
             android:layout_width="0dp"
-            android:layout_weight="5"
-            android:hint="Enter message"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/sendImageBtn"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/inputMsgetv"
+                android:layout_width="match_parent"
+                android:hint="Enter message"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:id="@+id/linear4"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/sendImageBtn"
+                    android:layout_width="wrap_content"
+                    android:text="Image"
+                    android:layout_height="wrap_content" />
+                <Button
+                    android:id="@+id/sendMsgbtn"
+                    android:layout_width="wrap_content"
+                    android:text="Send"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/capturedPhotoIv"
             android:layout_width="0dp"
-            android:layout_weight="2"
-            android:text="Image"
-            android:layout_height="wrap_content" />
-        <Button
-            android:id="@+id/sendMsgbtn"
-            android:layout_width="0dp"
-            android:layout_weight="2"
-            android:text="Send"
-            android:layout_height="wrap_content" />
+            android:layout_weight="1"
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 

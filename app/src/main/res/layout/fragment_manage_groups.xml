@@ -17,8 +17,8 @@
             android:layout_weight="1"
             android:text="Available groups:"
             android:gravity="center"
-            android:background="@android:color/holo_red_dark"
-            android:textSize="18sp"/>
+            android:background="#004de6"
+            android:textSize="32sp"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/groupsRecyclerView"

@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             TCPConnection.LocalService ls = (TCPConnection.LocalService) binder;
             connection = ls.getService();
             connection.connect();
+            //connection.startDummy();
             TCPServiceIsBound = true;
             Log.d(TAG, "connection: " + String.valueOf(connection!=null));
         }

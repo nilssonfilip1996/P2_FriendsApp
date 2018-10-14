@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ChatFragmentClasses.ChatFragment;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses.ManageGroupsFragment;
 import com.example.nilss.friendsintheworld.JSONHandler;
+import com.example.nilss.friendsintheworld.Pojos.Message;
+import com.example.nilss.friendsintheworld.Pojos.TextMessage;
 import com.example.nilss.friendsintheworld.TCPConnection;
 import com.example.nilss.friendsintheworld.Pojos.User;
 
@@ -25,8 +27,8 @@ import java.util.ArrayList;
 
 public class GroupController {
     private static final String TAG = "GroupController";
-    private static final String groupFragmentTag = "manageGroup";
-    private static final String chatFragmentTag = "chat";
+    public static final String groupFragmentTag = "manageGroup";
+    public static final String chatFragmentTag = "chat";
     private int fragmentContainer;
     private FragmentManager fragmentManager;
     private GroupActivity groupActivity;
@@ -37,6 +39,7 @@ public class GroupController {
     private TCPConnection tcpConnection;
     private ServiceConn serviceConn;
     private User currentUser;
+    private ArrayList<TextMessage> textMessages;
     private ArrayList<String> currentGroupsList;
     private boolean bound = false;
 
@@ -64,13 +67,15 @@ public class GroupController {
         }
         //Get ref to TCPConnection service.
         getTCPConnection();
-        currentUser = new User("Filip", new ArrayList<String>(),new ArrayList<String>());
+        //currentUser = new User("Clas", new ArrayList<String>(),new ArrayList<String>());
         initManageGroupsFragment();
+        chatFragment.setGroupController(this);
     }
 
     private void initManageGroupsFragment() {
         //init recyclerview with available groups
         currentGroupsList = new ArrayList<>();
+        currentGroupsList.add("Los Amigos"); //TEMP
         manageGroupsFragment.setGroupController(this);
         manageGroupsFragment.onInit(()->{
             manageGroupsFragment.updateList(currentGroupsList);
@@ -90,6 +95,8 @@ public class GroupController {
         public void onServiceConnected(ComponentName arg0, IBinder binder) {
             TCPConnection.LocalService ls = (TCPConnection.LocalService) binder;
             tcpConnection = ls.getService();
+            currentUser = tcpConnection.getCurrentUser();
+            textMessages = tcpConnection.getTextMessages();
             bound = true; //service bound
             Log.d(TAG, "connection: " + String.valueOf(tcpConnection!=null));
             receiveListener = new ReceiveListener();
@@ -104,6 +111,8 @@ public class GroupController {
     //unbind service when activity is destroyed
     public void onDestroy() {
         if(bound){
+            tcpConnection.setCurrentUser(currentUser);
+            tcpConnection.setTextMessages(textMessages);
             groupActivity.unbindService(serviceConn);
             receiveListener.stopListener();
             bound = false;
@@ -111,9 +120,44 @@ public class GroupController {
     }
     public void groupInListClicked(String groupName){
         Log.d(TAG, "groupInListClicked: " + groupName);
-        addGroup(groupName);
+        boolean registered = false;
+        for(int i=0; i<currentUser.getNbrOfGroups();i++){
+            if(currentUser.getGroupName(i).equals(groupName)){
+                registered = true;
+                break;
+            }
+        }
+        //Not a member of the group yet!
+        if(!registered){
+            addGroup(groupName);
+        }
+        ArrayList<TextMessage> messagesForGroup = getMessagesForGroup(groupName);
+        chatFragment.updateList(messagesForGroup);
         show(chatFragmentTag);
+    }
 
+    private ArrayList<TextMessage> getMessagesForGroup(String groupName){
+        ArrayList<TextMessage> temp = new ArrayList<>();
+        TextMessage tempMessage;
+        Log.d(TAG, "getMessagesForGroup: test");
+        for(int i=0;i<textMessages.size();i++){
+            tempMessage= textMessages.get(i);
+            if(tempMessage.getGroupName().equals(groupName)){
+                Log.d(TAG, "getMessagesForGroup: MATCH");
+                temp.add(tempMessage);
+            }
+        }
+        return temp;
+    }
+
+    public void send(String type,String[] values){
+        String JSONString = JSONHandler.createJsonString(type,values);
+        tcpConnection.sendMessage(JSONString);
+    }
+
+    public void addGroup(String s) {
+        send(JSONHandler.TYPE_REGISTER, new String[]{s,currentUser.getName()});
+        send(JSONHandler.TYPE_GROUPS, null);
     }
 
 
@@ -131,16 +175,6 @@ public class GroupController {
             ft.commit();
             currentTag = tag;
         }
-    }
-
-    public void send(String type,String[] values){
-        String JSONString = JSONHandler.createJsonString(type,values);
-        tcpConnection.sendMessage(JSONString);
-    }
-
-    public void addGroup(String s) {
-        send(JSONHandler.TYPE_REGISTER, new String[]{s,currentUser.getName()});
-        send(JSONHandler.TYPE_GROUPS, null);
     }
 
     private class ReceiveListener extends Thread {
@@ -185,13 +219,25 @@ public class GroupController {
                         break;
                     case(JSONHandler.TYPE_GROUPS):
                         //----->update users currentgroups here<------
+                        ArrayList<String> usersUpdatedGroups = new ArrayList<>();
+                        ArrayList<String> usersUpdatedGroupsID = new ArrayList<>();
+                        String group = "";
                         //update recyclerview on availablegroups
                         jsonArray = jsonObject.getJSONArray(JSONHandler.KEY_GROUPS);
                         currentGroupsList.clear();
                         for(int i=0; i<jsonArray.length();i++){
                             //Log.d(TAG, "processIncMessage: group"+String.valueOf(i)+" = "+jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP));
-                            currentGroupsList.add(jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP));
+                            group = jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP);
+                            currentGroupsList.add(group);
+                            for(int j=0;j<currentUser.getNbrOfGroups();j++){
+                                if(currentUser.getGroupName(i).equals(group)){
+                                    usersUpdatedGroups.add(group);
+                                    usersUpdatedGroupsID.add(currentUser.getGroupID(i));
+                                }
+                            }
                         }
+                        currentUser.setGroupNames(usersUpdatedGroups);
+                        currentUser.setGroupIDs(usersUpdatedGroupsID);
                         groupActivity.runOnUiThread(()->{
                             manageGroupsFragment.updateList(currentGroupsList);
                         });

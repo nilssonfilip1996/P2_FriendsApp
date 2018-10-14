@@ -8,12 +8,12 @@ import java.util.ArrayList;
 public class User {
     private static final String TAG = "User";
     private String name;
-    private ArrayList<String> groupName;
-    private ArrayList<String> groupID;
+    private ArrayList<String> groupNames;
+    private ArrayList<String> groupIDs;
     public User(String name, ArrayList<String> groupName, ArrayList<String> groupID){
         this.name=name;
-        this.groupName=groupName;
-        this.groupID=groupID;
+        this.groupNames =groupName;
+        this.groupIDs =groupID;
     }
 
     public String getName() {
@@ -24,32 +24,44 @@ public class User {
         this.name = name;
     }
 
+    public int getNbrOfGroups(){
+        return groupNames.size();
+    }
+
+    public void setGroupNames(ArrayList<String> groupNames){
+        this.groupNames = groupNames;
+    }
+
     public String getGroupName(int i) {
-        return groupName.get(i);
+        return groupNames.get(i);
     }
 
     public void addGroupName(String groupName) {
-        this.groupName.add(groupName);
+        this.groupNames.add(groupName);
     }
 
     public void removeGroup(String id) {
-        for(int i=0;i<groupID.size(); i++){
-            if(groupID.get(i).equals(id)){
-                this.groupID.remove(i);
-                this.groupName.remove(i);
-                break;
+        for(int i = 0; i< groupIDs.size(); i++){
+            if(groupIDs.get(i).equals(id)){
+                this.groupIDs.remove(i);
+                this.groupNames.remove(i);
+                return;
             }
         }
         Log.d(TAG, "removeGroup: Couldn´t remove group");
 
     }
 
+    public void setGroupIDs(ArrayList<String> groupIDs){
+        this.groupIDs = groupIDs;
+    }
+
     public String getGroupID(int i) {
-        return groupID.get(i);
+        return groupIDs.get(i);
     }
 
     public void addGroupID(String groupID) {
-        this.groupID.add(groupID);
+        this.groupIDs.add(groupID);
     }
 
     @Override
@@ -57,8 +69,8 @@ public class User {
         //return super.toString();
         String temp = "";
         StringBuilder stringBuilder = new StringBuilder();
-        for(int i=0; i<groupID.size(); i++){
-            stringBuilder.append("GroupName: " + groupName.get(i) + "groupId: " + groupID.get(i) + "\n");
+        for(int i = 0; i< groupIDs.size(); i++){
+            stringBuilder.append("GroupName: " + groupNames.get(i) + "groupId: " + groupIDs.get(i) + "\n");
         }
         return stringBuilder.toString();
     }

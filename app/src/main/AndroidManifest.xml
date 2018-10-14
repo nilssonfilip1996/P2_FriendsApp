@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.nilss.friendsintheworld">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                        android:maxSdkVersion="18"/>
+    <!--<uses-permission android:name="android.permission.CAMERA"/>-->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,6 +17,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.android.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAFGJNG7lmjUjogb8C4jB2yv_KEihbdy1A" />
@@ -29,7 +42,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapActivity" />
-        <activity android:name=".GroupActivityClasses.GroupActivity"></activity>
+        <activity android:name=".GroupActivityClasses.GroupActivity"
+            android:screenOrientation="portrait">
+        </activity>
         <service android:name=".TCPConnection"/>
     </application>
 
