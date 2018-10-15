@@ -54,12 +54,12 @@ public class TCPConnection extends Service{
         runOnThread = new RunOnThread();
         timer = new Timer();
         currentUser = new User("Filip", new ArrayList<String>(), new ArrayList<String>());
-        currentUser.addGroupName("Los Amigos"); //TEMP
+        //currentUser.addGroupName("Los Amigos"); //TEMP
         textMessages = new ArrayList<>();
-        textMessages.add(new TextMessage("Los Amigos", "Clas", "hey everyone!", null)); //TEMP
+        /*textMessages.add(new TextMessage("Los Amigos", "Clas", "hey everyone!", null)); //TEMP
         textMessages.add(new TextMessage("Los Amigos", "Britta", "hey Clas!", null));
         textMessages.add(new TextMessage("Los Amigos", "Clas", "This app rocks!", null));
-        textMessages.add(new TextMessage("Los Amigos", "Britta", "No it sucks!", null));
+        textMessages.add(new TextMessage("Los Amigos", "Britta", "No it sucks!", null));*/
         Log.d(TAG, "onStartCommand: Initializing...");
         return Service.START_STICKY;            //LU
     }
@@ -71,12 +71,16 @@ public class TCPConnection extends Service{
     }
 
 
-
     public class LocalService extends Binder {
         public TCPConnection getService() {
             return TCPConnection.this;
         }
     }
+
+    public void startLocationHandler() {
+        //TBC
+    }
+
 
     public void setCurrentUser(User currentUser){
         this.currentUser = currentUser;
@@ -120,7 +124,7 @@ public class TCPConnection extends Service{
                     Log.d(TAG, "run: receiving...");
                     //result = (String) input.readObject();
                     result = (String)dataIS.readUTF();
-                    //receiveBuffer.put(result);
+                    receiveBuffer.put(result);
                     Log.d(TAG, "run: received!!!" + result);
                 }
             } catch (Exception e) { // IOException, ClassNotFoundException
@@ -146,7 +150,6 @@ public class TCPConnection extends Service{
                 dataOS.flush();
                 output.flush();
                 //receiveBuffer.put("CONNECTED");
-                sendMessage("bla");
                 receive = new Receive();                //start the receive thread. Running while app is running.
                 receive.start();
                 startDummy();

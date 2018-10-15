@@ -39,6 +39,8 @@ public class GroupController {
     private TCPConnection tcpConnection;
     private ServiceConn serviceConn;
     private User currentUser;
+    private String currentGroupID;
+    private String currentGroupName;
     private ArrayList<TextMessage> textMessages;
     private ArrayList<String> currentGroupsList;
     private boolean bound = false;
@@ -75,7 +77,7 @@ public class GroupController {
     private void initManageGroupsFragment() {
         //init recyclerview with available groups
         currentGroupsList = new ArrayList<>();
-        currentGroupsList.add("Los Amigos"); //TEMP
+/*        currentGroupsList.add("Los Amigos"); //TEMP*/
         manageGroupsFragment.setGroupController(this);
         manageGroupsFragment.onInit(()->{
             manageGroupsFragment.updateList(currentGroupsList);
@@ -124,6 +126,8 @@ public class GroupController {
         for(int i=0; i<currentUser.getNbrOfGroups();i++){
             if(currentUser.getGroupName(i).equals(groupName)){
                 registered = true;
+                currentGroupID = currentUser.getGroupID(i);
+                currentGroupName = groupName;
                 break;
             }
         }
@@ -177,6 +181,18 @@ public class GroupController {
         }
     }
 
+    public void sendMessage(String textMessage, byte[] imageArray){
+        if((textMessage.equals("")) && (imageArray==null)){
+            Toast.makeText(groupActivity, "Message must contain atleast a message of image!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //only a textmessage to be sent
+        if(imageArray==null){
+            send(JSONHandler.TYPE_TEXTCHAT,new String[]{currentGroupID, textMessage});
+        }
+    }
+
+
     private class ReceiveListener extends Thread {
         private String message;
         public void stopListener() {
@@ -203,7 +219,9 @@ public class GroupController {
                         //FOR VG, a user can be part of multiple groups. TBC
                         currentUser.addGroupName(jsonObject.getString(JSONHandler.KEY_GROUP));
                         currentUser.addGroupID(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
-                        Log.d(TAG, "processIncMessage: " + currentUser.toString());
+                        currentGroupID = jsonObject.getString(JSONHandler.KEY_GROUP_ID);
+                        currentGroupName = jsonObject.getString(JSONHandler.KEY_GROUP);
+                        Log.d(TAG, "processIncMessage: users groups:" + currentUser.toString());
                         //Show on the UI which group they currently belong to
                         //Log.d(TAG, "processIncMessage: group: " + currentUser.getGroupID());
                         break;
@@ -230,9 +248,9 @@ public class GroupController {
                             group = jsonArray.getJSONObject(i).getString(JSONHandler.KEY_GROUP);
                             currentGroupsList.add(group);
                             for(int j=0;j<currentUser.getNbrOfGroups();j++){
-                                if(currentUser.getGroupName(i).equals(group)){
+                                if(currentUser.getGroupName(j).equals(group)){
                                     usersUpdatedGroups.add(group);
-                                    usersUpdatedGroupsID.add(currentUser.getGroupID(i));
+                                    usersUpdatedGroupsID.add(currentUser.getGroupID(j));
                                 }
                             }
                         }
@@ -248,6 +266,28 @@ public class GroupController {
                         break;
                     case(JSONHandler.TYPE_LOCATIONS):
                         //update the pins of the map.
+                        break;
+                    case(JSONHandler.TYPE_TEXTCHAT):
+                        Log.d(TAG, "processIncMessage: incomming textmessage");
+                        String groupName = jsonObject.getString(JSONHandler.KEY_GROUP);
+                        //if len==3 it means it is a reply from my own message
+                        if(jsonObject.length()==3){
+
+                            textMessages.add(new TextMessage(currentGroupName,
+                                                            currentUser.getName(),
+                                                            jsonObject.getString(JSONHandler.KEY_TEXT),
+                                                            null));
+                        }
+                        //Someone else is sending.
+                        else{
+                            textMessages.add(new TextMessage(jsonObject.getString(JSONHandler.KEY_GROUP),
+                                    jsonObject.getString(JSONHandler.KEY_MEMBER),
+                                    jsonObject.getString(JSONHandler.KEY_TEXT),
+                                    null));
+                        }
+                        groupActivity.runOnUiThread(()->{
+                            chatFragment.updateList(getMessagesForGroup(groupName));
+                        });
                         break;
                 }
             } catch (JSONException e) {

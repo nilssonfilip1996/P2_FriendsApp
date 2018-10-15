@@ -13,6 +13,7 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.support.v4.graphics.BitmapCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -30,6 +31,7 @@ import com.example.nilss.friendsintheworld.Pojos.Message;
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
 import com.example.nilss.friendsintheworld.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -53,8 +55,10 @@ public class ChatFragment extends Fragment {
     private ChatAdapter adapter;
     private ArrayList<TextMessage> currentMessageList;
     private OnCreateViewLIstener mListener;
+    private boolean isPictureTaken;
     private Uri pictureUri;
     private String mCurrentPhotoPath;
+    private Bitmap mCurrentPhotoBitmap;
 
     public void onInit(OnCreateViewLIstener listener){
         this.mListener = listener;
@@ -85,10 +89,14 @@ public class ChatFragment extends Fragment {
         this.sendImagebtn = view.findViewById(R.id.sendImageBtn);
         this.inputMessageEtv = view.findViewById(R.id.inputMsgetv);
         this.takenPhotoIv = view.findViewById(R.id.capturedPhotoIv);
-        sendImagebtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchTakePictureIntent();
+        sendImagebtn.setOnClickListener((View v)->dispatchTakePictureIntent());
+        sendMessageBtn.setOnClickListener((View v)->{
+            if(isPictureTaken){
+                byte[] byteArray = bitmapToByteArray();
+                groupController.sendMessage(inputMessageEtv.getText().toString(), byteArray);
+            }
+            else {
+                groupController.sendMessage(inputMessageEtv.getText().toString(), null);
             }
         });
     }
@@ -97,9 +105,22 @@ public class ChatFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==REQUEST_TAKE_PICTURE && resultCode== Activity.RESULT_OK) {
-            takenPhotoIv.setImageBitmap(getScaled(mCurrentPhotoPath,takenPhotoIv.getMaxWidth(),takenPhotoIv.getMaxHeight()));
+            isPictureTaken=true;
+            mCurrentPhotoBitmap = getScaled(mCurrentPhotoPath,100,100);
+            takenPhotoIv.setImageBitmap(mCurrentPhotoBitmap);
             takenPhotoIv.setRotation(90);
         }
+    }
+
+    private byte[] bitmapToByteArray(){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        mCurrentPhotoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        return byteArray;
+    }
+    private Bitmap byteArrayToBitmap(byte[] byteArray){
+        Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray , 0, byteArray.length);
+        return bitmap;
     }
 
     private File createImageFile() throws IOException {
@@ -115,6 +136,7 @@ public class ChatFragment extends Fragment {
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
+        Log.d(TAG, "createImageFile: "+ mCurrentPhotoPath);
         return image;
     }
 
@@ -157,6 +179,9 @@ public class ChatFragment extends Fragment {
         bmOptions.inSampleSize = scaleFactor;
 
         Bitmap bitmap = BitmapFactory.decodeFile(pathToPicture, bmOptions);
+        //Check if size is less the 64kb
+        int bitmapByteCount= BitmapCompat.getAllocationByteCount(bitmap);
+        Log.d(TAG, "getScaled: " + String.valueOf(bitmapByteCount));
         return bitmap;
     }
 

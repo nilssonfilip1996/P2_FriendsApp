@@ -29,6 +29,8 @@ public final class JSONHandler {
     public static final String KEY_LOCATION = "location";
     public static final String KEY_LONGITUDE = "longitude";
     public static final String KEY_LATITUDE = "latitude";
+    public static final String KEY_TEXT = "text";
+    public static final String KEY_MEMBER = "member";
 
 
 
@@ -55,6 +57,9 @@ public final class JSONHandler {
                 break;
             case(JSONHandler.TYPE_LOCATION):
                 jsonString = createJSONSetCurrentPosition(fields);
+                break;
+            case(JSONHandler.TYPE_TEXTCHAT):
+                jsonString = createJSONTextMessage(fields);
                 break;
 
         }
@@ -127,6 +132,21 @@ public final class JSONHandler {
                     .name("id").value(fields[0])
                     .name("longitude").value(fields[1])
                     .name("latitude").value(fields[2])
+                    .endObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    public static String createJSONTextMessage(String[] fields) {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = new JsonWriter( stringWriter );
+        try {
+            writer.beginObject()
+                    .name("type").value(TYPE_TEXTCHAT)
+                    .name("id").value(fields[0])
+                    .name("text").value(fields[1])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();
