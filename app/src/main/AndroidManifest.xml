@@ -43,6 +43,7 @@
         </activity>
         <activity android:name=".MapActivity" />
         <activity android:name=".GroupActivityClasses.GroupActivity"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait">
         </activity>
         <service android:name=".TCPConnection"/>

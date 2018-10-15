@@ -38,7 +38,8 @@
     <LinearLayout
         android:id="@+id/linear2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chatRecyclerView"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -46,31 +47,37 @@
             android:id="@+id/linear3"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <EditText
                 android:id="@+id/inputMsgetv"
                 android:layout_width="match_parent"
+                android:background="@drawable/layout_bg"
+                android:padding="5dp"
                 android:hint="Enter message"
-                android:layout_height="wrap_content"/>
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
 
             <LinearLayout
                 android:id="@+id/linear4"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
                 <Button
                     android:id="@+id/sendImageBtn"
-                    android:layout_width="wrap_content"
-                    android:text="Image"
-                    android:layout_height="wrap_content" />
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/ic_menu_camera"
+                    android:layout_height="match_parent" />
                 <Button
                     android:id="@+id/sendMsgbtn"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:text="Send"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="match_parent" />
             </LinearLayout>
 
         </LinearLayout>
