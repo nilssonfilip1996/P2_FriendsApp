@@ -1,11 +1,17 @@
 package com.example.nilss.friendsintheworld;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +24,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    public static final int REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int ERROR_DIALOG_REQUEST = 9001;
     public static final String IPADDR = "195.178.227.53";
     public static final String PORTNBR = "7117";
@@ -75,7 +82,12 @@ public class MainActivity extends AppCompatActivity {
             TCPConnection.LocalService ls = (TCPConnection.LocalService) binder;
             connection = ls.getService();
             connection.connect();
-            connection.startLocationHandler();
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_DENIED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
+            } else {
+                connection.startLocationHandler(MainActivity.this,REQUEST_ACCESS_FINE_LOCATION);
+            }
+
             //connection.startDummy();
             TCPServiceIsBound = true;
             Log.d(TAG, "connection: " + String.valueOf(connection!=null));
@@ -84,6 +96,11 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceDisconnected(ComponentName arg0) {
             TCPServiceIsBound=false;
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        connection.startLocationHandler(this,requestCode);
     }
 
     public boolean isServiceOk(){

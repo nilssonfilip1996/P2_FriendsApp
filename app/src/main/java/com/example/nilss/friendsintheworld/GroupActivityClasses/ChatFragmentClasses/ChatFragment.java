@@ -89,9 +89,12 @@ public class ChatFragment extends Fragment {
         this.sendImagebtn = view.findViewById(R.id.sendImageBtn);
         this.inputMessageEtv = view.findViewById(R.id.inputMsgetv);
         this.takenPhotoIv = view.findViewById(R.id.capturedPhotoIv);
+        mapsBtn.setOnClickListener((View v)->groupController.mapsBtnClicked());
+
         sendImagebtn.setOnClickListener((View v)->dispatchTakePictureIntent());
         sendMessageBtn.setOnClickListener((View v)->{
             if(isPictureTaken){
+                //Log.d(TAG, "initComponents: sending image and text");
                 byte[] byteArray = bitmapToByteArray();
                 groupController.sendMessage(inputMessageEtv.getText().toString(), byteArray);
             }
@@ -118,7 +121,7 @@ public class ChatFragment extends Fragment {
         byte[] byteArray = stream.toByteArray();
         return byteArray;
     }
-    private Bitmap byteArrayToBitmap(byte[] byteArray){
+    public Bitmap byteArrayToBitmap(byte[] byteArray){
         Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray , 0, byteArray.length);
         return bitmap;
     }
@@ -193,7 +196,7 @@ public class ChatFragment extends Fragment {
         // use a linear layout manager
         this.mLayoutManager = new LinearLayoutManager(getActivity());
         this.recyclerView.setLayoutManager(mLayoutManager);
-        adapter = new ChatAdapter(groupController, currentMessageList);
+        adapter = new ChatAdapter(this, groupController, currentMessageList);
         recyclerView.setAdapter(adapter);
     }
 
@@ -205,6 +208,7 @@ public class ChatFragment extends Fragment {
     public void updateList(ArrayList<TextMessage> messageList) {
         currentMessageList.clear();
         currentMessageList.addAll(messageList);
+        recyclerView.smoothScrollToPosition(currentMessageList.size());
         adapter.notifyDataSetChanged();
     }
 

@@ -1,10 +1,19 @@
 package com.example.nilss.friendsintheworld;
 
+import android.Manifest;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
@@ -27,6 +36,7 @@ import java.util.TimerTask;
 
 public class TCPConnection extends Service{
     private static final String TAG = "TCPConnection";
+    public static final int REQUEST_ACCESS_FINE_LOCATION = 1;
     public static final String IP="IP",PORT="PORT"; //
     private String ip;
     private int connectionPort;
@@ -43,7 +53,12 @@ public class TCPConnection extends Service{
     private InetAddress address;
     private User currentUser;
     private ArrayList<TextMessage> textMessages;
+    private String currentGroupID;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     private Timer timer;
+    private String latitudeString;
+    private String longitudeString;
 
     //You can say that this is the "constructor".
     @Override
@@ -53,9 +68,39 @@ public class TCPConnection extends Service{
         receiveBuffer = new Buffer<String>();       //have to convert an incoming string to a JSON Object
         runOnThread = new RunOnThread();
         timer = new Timer();
-        currentUser = new User("Filip", new ArrayList<String>(), new ArrayList<String>());
+        currentUser = new User("Axl Rose", new ArrayList<String>(), new ArrayList<String>());
         //currentUser.addGroupName("Los Amigos"); //TEMP
         textMessages = new ArrayList<>();
+        locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                double x = location.getLatitude();
+                double y = location.getLongitude();
+                latitudeString = String.valueOf(x);
+                longitudeString = String.valueOf(y);
+                //Log.d("Pos: ", "Lat=" + y + ",    Long=" + x);
+                if(currentGroupID!=null) {
+                    Log.d(TAG, "onLocationChanged: Sending coordinates");
+                    sendMessage(JSONHandler.createJSONSetCurrentPosition(new String[]{currentGroupID, latitudeString, longitudeString}));
+                }
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
         /*textMessages.add(new TextMessage("Los Amigos", "Clas", "hey everyone!", null)); //TEMP
         textMessages.add(new TextMessage("Los Amigos", "Britta", "hey Clas!", null));
         textMessages.add(new TextMessage("Los Amigos", "Clas", "This app rocks!", null));
@@ -63,6 +108,7 @@ public class TCPConnection extends Service{
         Log.d(TAG, "onStartCommand: Initializing...");
         return Service.START_STICKY;            //LU
     }
+
 
     @Nullable
     @Override
@@ -77,10 +123,34 @@ public class TCPConnection extends Service{
         }
     }
 
-    public void startLocationHandler() {
-        //TBC
+    public void startLocationHandler(MainActivity mainActivity, int requestCode) {
+        switch (requestCode) {
+            case REQUEST_ACCESS_FINE_LOCATION :
+                if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 20000, 0, locationListener);
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 20000, 0, locationListener);
+
+                }
+                break;
+        }
+
     }
 
+    public String getLatitudeString() {
+        return latitudeString;
+    }
+
+    public String getLongitudeString() {
+        return longitudeString;
+    }
+
+    public String getCurrentGroupID() {
+        return currentGroupID;
+    }
+
+    public void setCurrentGroupID(String currentGroupID) {
+        this.currentGroupID = currentGroupID;
+    }
 
     public void setCurrentUser(User currentUser){
         this.currentUser = currentUser;
@@ -152,7 +222,7 @@ public class TCPConnection extends Service{
                 //receiveBuffer.put("CONNECTED");
                 receive = new Receive();                //start the receive thread. Running while app is running.
                 receive.start();
-                startDummy();
+                //startDummy();
                 Log.d(TAG, "run: CONNECTED");
             } catch (Exception e) { // SocketException, UnknownHostException
                 //exception = e;
@@ -208,7 +278,7 @@ public class TCPConnection extends Service{
         }
     }
 
-    public void startDummy(){
+/*    public void startDummy(){
         Dummy dummy = new Dummy();
         timer.schedule(dummy,0,5000);
     }
@@ -219,5 +289,5 @@ public class TCPConnection extends Service{
             Log.d(TAG, "run: Timer: Sending my coordinates!");
             //sendMessage("blabla");
         }
-    }
+    }*/
 }

@@ -1,8 +1,10 @@
 package com.example.nilss.friendsintheworld.GroupActivityClasses;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ChatFragmentClasses.ChatFragment;
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses.ManageGroupsFragment;
 import com.example.nilss.friendsintheworld.JSONHandler;
+import com.example.nilss.friendsintheworld.MainActivity;
 import com.example.nilss.friendsintheworld.Pojos.Message;
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
 import com.example.nilss.friendsintheworld.TCPConnection;
@@ -23,6 +26,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class GroupController {
@@ -43,6 +52,8 @@ public class GroupController {
     private String currentGroupName;
     private ArrayList<TextMessage> textMessages;
     private ArrayList<String> currentGroupsList;
+    private ArrayList<JSONObject> incommingLocationsList;
+    private byte[] imageByteTobeSent;
     private boolean bound = false;
 
     public GroupController(GroupActivity groupActivity, int fragmentContainer, Bundle savedInstanceState) {
@@ -77,6 +88,7 @@ public class GroupController {
     private void initManageGroupsFragment() {
         //init recyclerview with available groups
         currentGroupsList = new ArrayList<>();
+        incommingLocationsList = new ArrayList<>();
 /*        currentGroupsList.add("Los Amigos"); //TEMP*/
         manageGroupsFragment.setGroupController(this);
         manageGroupsFragment.onInit(()->{
@@ -127,6 +139,7 @@ public class GroupController {
             if(currentUser.getGroupName(i).equals(groupName)){
                 registered = true;
                 currentGroupID = currentUser.getGroupID(i);
+                tcpConnection.setCurrentGroupID(currentGroupID);
                 currentGroupName = groupName;
                 break;
             }
@@ -152,6 +165,38 @@ public class GroupController {
             }
         }
         return temp;
+    }
+
+    public void mapsBtnClicked() {
+        Log.d(TAG, "mapsBtnClicked: currentGroupName: "+ currentGroupName);
+        ArrayList<String> coordinateList = new ArrayList<>();
+        for (int i = 0; i < incommingLocationsList.size(); i++) {
+            try {
+                Log.d(TAG, "mapsBtnClicked: LocationsList(" + String.valueOf(i)+") = " + incommingLocationsList.get(i).getString(JSONHandler.KEY_GROUP));
+                if(incommingLocationsList.get(i).getString(JSONHandler.KEY_GROUP).equals(currentGroupName)){
+                    JSONArray jsonArray= incommingLocationsList.get(i).getJSONArray(JSONHandler.KEY_LOCATION);
+                    for (int j = 0; j < jsonArray.length(); j++) {
+                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LONGITUDE));
+                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LATITUDE));
+                    }
+                    Intent returnIntent = new Intent();
+                    returnIntent.putStringArrayListExtra("pins",coordinateList);
+                    groupActivity.setResult(Activity.RESULT_OK,returnIntent);
+                    groupActivity.finish();
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+/*        ArrayList<String> coordinateList = new ArrayList<>();
+        for (int i = 0; i < currentMessageList.size(); i++) {
+            //coordinateList.add()
+        }
+        Intent returnIntent = new Intent();
+        returnIntent.putStringArrayListExtra(("pins",result);
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();*/
     }
 
     public void send(String type,String[] values){
@@ -190,6 +235,15 @@ public class GroupController {
         if(imageArray==null){
             send(JSONHandler.TYPE_TEXTCHAT,new String[]{currentGroupID, textMessage});
         }
+        //otherwise a imagemessage!
+        else{
+            imageByteTobeSent = imageArray;
+            //send upload request
+            send(JSONHandler.TYPE_IMAGECHAT, new String[]{currentGroupID,
+                                                            textMessage,
+                                                            tcpConnection.getLongitudeString(),
+                                                            tcpConnection.getLatitudeString()});
+        }
     }
 
 
@@ -220,6 +274,7 @@ public class GroupController {
                         currentUser.addGroupName(jsonObject.getString(JSONHandler.KEY_GROUP));
                         currentUser.addGroupID(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
                         currentGroupID = jsonObject.getString(JSONHandler.KEY_GROUP_ID);
+                        tcpConnection.setCurrentGroupID(currentGroupID);
                         currentGroupName = jsonObject.getString(JSONHandler.KEY_GROUP);
                         Log.d(TAG, "processIncMessage: users groups:" + currentUser.toString());
                         //Show on the UI which group they currently belong to
@@ -240,6 +295,7 @@ public class GroupController {
                         ArrayList<String> usersUpdatedGroups = new ArrayList<>();
                         ArrayList<String> usersUpdatedGroupsID = new ArrayList<>();
                         String group = "";
+                        boolean currentGroupStillpresent = false;
                         //update recyclerview on availablegroups
                         jsonArray = jsonObject.getJSONArray(JSONHandler.KEY_GROUPS);
                         currentGroupsList.clear();
@@ -251,8 +307,16 @@ public class GroupController {
                                 if(currentUser.getGroupName(j).equals(group)){
                                     usersUpdatedGroups.add(group);
                                     usersUpdatedGroupsID.add(currentUser.getGroupID(j));
+                                    if(currentGroupID!=null && currentGroupID.equals(currentUser.getGroupID(j))){
+                                        currentGroupStillpresent=true;
+                                    }
                                 }
                             }
+                        }
+                        if(!currentGroupStillpresent){
+                            currentGroupName=null;
+                            currentGroupID=null;
+                            tcpConnection.setCurrentGroupID(currentGroupID);
                         }
                         currentUser.setGroupNames(usersUpdatedGroups);
                         currentUser.setGroupIDs(usersUpdatedGroupsID);
@@ -266,13 +330,26 @@ public class GroupController {
                         break;
                     case(JSONHandler.TYPE_LOCATIONS):
                         //update the pins of the map.
+                        //NEED TO VERIFY THIS!
+                        if(incommingLocationsList.size()==0){
+                            incommingLocationsList.add(jsonObject);
+                            break;
+                        }
+                        for (int i = 0; i < incommingLocationsList.size(); i++) {
+                            if(incommingLocationsList.get(i).getString(JSONHandler.KEY_GROUP).equals(jsonObject.getString(JSONHandler.KEY_GROUP)))
+                                incommingLocationsList.remove(i);
+                                incommingLocationsList.add(jsonObject);
+                        }
+                        //incommingLocationsList.add(jsonObject);
+
                         break;
                     case(JSONHandler.TYPE_TEXTCHAT):
                         Log.d(TAG, "processIncMessage: incomming textmessage");
-                        String groupName = jsonObject.getString(JSONHandler.KEY_GROUP);
+                        Log.d(TAG, "processIncMessage: "+ message);
+                        //String groupName = jsonObject.getString(JSONHandler.KEY_GROUP);
                         //if len==3 it means it is a reply from my own message
-                        if(jsonObject.length()==3){
-
+/*                        if(jsonObject.length()==3){
+                            Log.d(TAG, "processIncMessage: -----------------1-----------");
                             textMessages.add(new TextMessage(currentGroupName,
                                                             currentUser.getName(),
                                                             jsonObject.getString(JSONHandler.KEY_TEXT),
@@ -280,15 +357,38 @@ public class GroupController {
                         }
                         //Someone else is sending.
                         else{
+                            Log.d(TAG, "processIncMessage: -----------------2-----------");
+                            textMessages.add(new TextMessage(jsonObject.getString(JSONHandler.KEY_GROUP),
+                                    jsonObject.getString(JSONHandler.KEY_MEMBER),
+                                    jsonObject.getString(JSONHandler.KEY_TEXT),
+                                    null));
+                        }*/
+                        if(jsonObject.length()==4) {
                             textMessages.add(new TextMessage(jsonObject.getString(JSONHandler.KEY_GROUP),
                                     jsonObject.getString(JSONHandler.KEY_MEMBER),
                                     jsonObject.getString(JSONHandler.KEY_TEXT),
                                     null));
                         }
                         groupActivity.runOnUiThread(()->{
-                            chatFragment.updateList(getMessagesForGroup(groupName));
+                            chatFragment.updateList(getMessagesForGroup(currentGroupName));
                         });
                         break;
+                    case(JSONHandler.TYPE_UPLOAD):
+                        String imageId = jsonObject.getString(JSONHandler.KEY_IMAGE_ID);
+                        String uploadPort = jsonObject.getString(JSONHandler.KEY_PORT);
+                        UploadImage uploadImage = new UploadImage();
+                        uploadImage.execute(imageId,uploadPort);
+                        break;
+                    case(JSONHandler.TYPE_IMAGECHAT):
+                        Log.d(TAG, "processIncMessage: An image is ready to be downloaded!");
+                        DownloadImage dlImage = new DownloadImage();
+                        dlImage.execute(jsonObject.getString(JSONHandler.KEY_GROUP),
+                                        jsonObject.getString(JSONHandler.KEY_MEMBER),
+                                        jsonObject.getString(JSONHandler.KEY_TEXT),
+                                        jsonObject.getString(JSONHandler.KEY_LONGITUDE),
+                                        jsonObject.getString(JSONHandler.KEY_LONGITUDE),
+                                        jsonObject.getString(JSONHandler.KEY_IMAGE_ID),
+                                        jsonObject.getString((JSONHandler.KEY_PORT)));
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -313,6 +413,66 @@ public class GroupController {
                     e.printStackTrace();
                 }*/
             }
+        }
+    }
+
+    private class UploadImage extends AsyncTask<String,Void,Void>{
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String imageId = params[0];
+            String uploadPort = params[1];
+            try {
+                Log.d(TAG, "doInBackground: Trying to upload imageID: "+ imageId + ", on port: "+ uploadPort);
+                Socket socket = new Socket(InetAddress.getByName(MainActivity.IPADDR),Integer.parseInt(uploadPort));
+                ObjectOutputStream objectOS = new ObjectOutputStream(socket.getOutputStream());
+                objectOS.flush();
+                objectOS.writeUTF(imageId);
+                objectOS.flush();
+                objectOS.writeObject(imageByteTobeSent);
+                objectOS.flush();
+                objectOS.close();
+                socket.close();
+                Log.d(TAG, "doInBackground: Uploaded image to server!");
+            } catch (Exception e) {
+                Log.d(TAG, "doInBackground: " + e);
+            }
+            return null;
+        }
+    }
+
+    private class DownloadImage extends AsyncTask<String,Void,Void>{
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String groupName = params[0];
+            String member = params[1];
+            String text = params[2];
+            String longitude = params[3];
+            String latitude = params[4];
+            String imageId = params[5];
+            String port = params[6];
+
+            try {
+                Log.d(TAG, "doInBackground: Trying to download imageID: "+ imageId + ", on port: "+ port);
+                Socket socket = new Socket(InetAddress.getByName(MainActivity.IPADDR),Integer.parseInt(port));
+                ObjectOutputStream objectOS = new ObjectOutputStream(socket.getOutputStream());
+                objectOS.writeUTF(imageId);
+                objectOS.flush();
+                ObjectInputStream objectIS = new ObjectInputStream(socket.getInputStream());
+                byte[] imageByte = (byte[])objectIS.readObject();
+                objectOS.close();
+                objectIS.close();
+                socket.close();
+                Log.d(TAG, "doInBackground: Downloaded image from server!");
+                textMessages.add(new TextMessage(groupName, member, text, imageByte));
+                groupActivity.runOnUiThread(()->{
+                    chatFragment.updateList(getMessagesForGroup(currentGroupName));
+                });
+            } catch (Exception e) {
+                Log.d(TAG, "doInBackground: DownloadImage: " + e);
+            }
+            return null;
         }
     }
 

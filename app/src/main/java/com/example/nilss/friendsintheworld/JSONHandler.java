@@ -31,6 +31,8 @@ public final class JSONHandler {
     public static final String KEY_LATITUDE = "latitude";
     public static final String KEY_TEXT = "text";
     public static final String KEY_MEMBER = "member";
+    public static final String KEY_IMAGE_ID = "imageid";
+    public static final String KEY_PORT = "port";
 
 
 
@@ -61,7 +63,9 @@ public final class JSONHandler {
             case(JSONHandler.TYPE_TEXTCHAT):
                 jsonString = createJSONTextMessage(fields);
                 break;
-
+            case(JSONHandler.TYPE_IMAGECHAT):
+                jsonString = createJSONImageAndTextMessage(fields);
+                break;
         }
         return jsonString;
     }
@@ -147,6 +151,23 @@ public final class JSONHandler {
                     .name("type").value(TYPE_TEXTCHAT)
                     .name("id").value(fields[0])
                     .name("text").value(fields[1])
+                    .endObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stringWriter.toString();
+    }
+
+    public static String createJSONImageAndTextMessage(String[] fields) {
+        StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = new JsonWriter( stringWriter );
+        try {
+            writer.beginObject()
+                    .name("type").value(TYPE_IMAGECHAT)
+                    .name("id").value(fields[0])
+                    .name("text").value(fields[1])
+                    .name("longitude").value(fields[2])
+                    .name("latitude").value(fields[3])
                     .endObject();
         } catch (IOException e) {
             e.printStackTrace();

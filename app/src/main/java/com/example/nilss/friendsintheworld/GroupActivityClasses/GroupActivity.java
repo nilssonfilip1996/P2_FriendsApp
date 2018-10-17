@@ -1,5 +1,6 @@
 package com.example.nilss.friendsintheworld.GroupActivityClasses;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -16,9 +17,15 @@ public class GroupActivity extends AppCompatActivity {
         groupController = new GroupController(this, R.id.fragmentContainer, savedInstanceState);
     }
 
+
+
     @Override
     protected void onDestroy() {
         groupController.onDestroy();
+/*        Intent returnIntent = new Intent();
+        returnIntent.putStringArrayListExtra(("pins",result);
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();*/
         super.onDestroy();
     }
 }
