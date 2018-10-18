@@ -2,4 +2,5 @@ package com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFrag
 
 public interface OnItemClickListener {
     void onItemClicked(int position);
+    void onItemLongClicked(int position);
 }

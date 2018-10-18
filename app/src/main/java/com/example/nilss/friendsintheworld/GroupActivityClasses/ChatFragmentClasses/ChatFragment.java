@@ -44,7 +44,6 @@ import java.util.Date;
  */
 public class ChatFragment extends Fragment {
     private static final String TAG = "ChatFragment";
-    static final int REQUEST_TAKE_THUMBNAIL = 1;
     static final int REQUEST_TAKE_PICTURE = 2;
     private GroupController groupController;
     private Button manageGroupsBtn, mapsBtn, sendMessageBtn, sendImagebtn;
@@ -56,7 +55,6 @@ public class ChatFragment extends Fragment {
     private ArrayList<TextMessage> currentMessageList;
     private OnCreateViewLIstener mListener;
     private boolean isPictureTaken;
-    private Uri pictureUri;
     private String mCurrentPhotoPath;
     private Bitmap mCurrentPhotoBitmap;
 
@@ -93,11 +91,12 @@ public class ChatFragment extends Fragment {
 
         sendImagebtn.setOnClickListener((View v)->dispatchTakePictureIntent());
         sendMessageBtn.setOnClickListener((View v)->{
+            //send text+picture
             if(isPictureTaken){
-                //Log.d(TAG, "initComponents: sending image and text");
                 byte[] byteArray = bitmapToByteArray();
                 groupController.sendMessage(inputMessageEtv.getText().toString(), byteArray);
             }
+            //send text
             else {
                 groupController.sendMessage(inputMessageEtv.getText().toString(), null);
             }
@@ -212,4 +211,8 @@ public class ChatFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
+    public void clearInput() {
+        takenPhotoIv.setImageDrawable(null);
+        inputMessageEtv.setText("");
+    }
 }

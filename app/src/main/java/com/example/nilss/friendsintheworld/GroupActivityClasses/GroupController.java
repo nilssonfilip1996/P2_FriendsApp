@@ -132,15 +132,25 @@ public class GroupController {
             bound = false;
         }
     }
-    public void groupInListClicked(String groupName){
+    public void groupInListClicked(String groupName, boolean wantToRegister){
         Log.d(TAG, "groupInListClicked: " + groupName);
         boolean registered = false;
+        //Check if user is already registered to group
         for(int i=0; i<currentUser.getNbrOfGroups();i++){
             if(currentUser.getGroupName(i).equals(groupName)){
                 registered = true;
                 currentGroupID = currentUser.getGroupID(i);
-                tcpConnection.setCurrentGroupID(currentGroupID);
-                currentGroupName = groupName;
+                if(wantToRegister) {
+                    tcpConnection.setCurrentGroupID(currentGroupID);
+                    currentGroupName = groupName;
+                }
+                else{
+                    removeGroup(currentGroupID);
+                    currentGroupID=null;
+                    tcpConnection.setCurrentGroupID(currentGroupID);
+                    currentGroupName=null;
+                    return; //return here. Everything after this is for registration.
+                }
                 break;
             }
         }
@@ -176,6 +186,7 @@ public class GroupController {
                 if(incommingLocationsList.get(i).getString(JSONHandler.KEY_GROUP).equals(currentGroupName)){
                     JSONArray jsonArray= incommingLocationsList.get(i).getJSONArray(JSONHandler.KEY_LOCATION);
                     for (int j = 0; j < jsonArray.length(); j++) {
+                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_MEMBER));
                         coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LONGITUDE));
                         coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LATITUDE));
                     }
@@ -204,11 +215,19 @@ public class GroupController {
         tcpConnection.sendMessage(JSONString);
     }
 
-    public void addGroup(String s) {
-        send(JSONHandler.TYPE_REGISTER, new String[]{s,currentUser.getName()});
+    private void removeGroup(String currentGroupID) {
+        send(JSONHandler.TYPE_UNREGISTER, new String[]{currentGroupID});
         send(JSONHandler.TYPE_GROUPS, null);
     }
 
+    public void addGroup(String groupName) {
+        send(JSONHandler.TYPE_REGISTER, new String[]{groupName,currentUser.getName()});
+        send(JSONHandler.TYPE_GROUPS, null);
+    }
+
+    public String getCurrentUserName() {
+        return currentUser.getName();
+    }
 
     //switch active fragment.
     public void show(String tag) {
@@ -283,6 +302,7 @@ public class GroupController {
                     case(JSONHandler.TYPE_UNREGISTER):
                         //remove group from users current groups.
                         currentUser.removeGroup(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
+                        Log.d(TAG, "processIncMessage: removed from groupId: " + jsonObject.getString(JSONHandler.KEY_GROUP_ID));
                         //Show on the UI which group they currently belong to
                         break;
                     case(JSONHandler.TYPE_MEMBERS):
@@ -378,6 +398,7 @@ public class GroupController {
                         String uploadPort = jsonObject.getString(JSONHandler.KEY_PORT);
                         UploadImage uploadImage = new UploadImage();
                         uploadImage.execute(imageId,uploadPort);
+                        chatFragment.clearInput();
                         break;
                     case(JSONHandler.TYPE_IMAGECHAT):
                         Log.d(TAG, "processIncMessage: An image is ready to be downloaded!");
@@ -402,16 +423,10 @@ public class GroupController {
                     message = tcpConnection.receive();
                     Log.d(TAG, "run: incoming: "+message);
                     processIncMessage();
-                    //JSONObject jsonObject = null;
-                    /*JSONObject jsonObject = new JSONObject(message);
-                    Log.d(TAG, "run: JSON: "+ jsonObject.toString());
-                    Log.d(TAG, "run: received message: type:" + jsonObject.getString("type"));*/
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     receiveListener = null;
-                } /*catch (JSONException e) {
-                    e.printStackTrace();
-                }*/
+                }
             }
         }
     }

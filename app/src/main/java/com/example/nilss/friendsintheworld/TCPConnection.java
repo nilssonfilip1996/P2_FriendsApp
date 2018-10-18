@@ -37,15 +37,13 @@ import java.util.TimerTask;
 public class TCPConnection extends Service{
     private static final String TAG = "TCPConnection";
     public static final int REQUEST_ACCESS_FINE_LOCATION = 1;
-    public static final String IP="IP",PORT="PORT"; //
+    public static final String USERNAME = "username", IP="IP",PORT="PORT"; //
     private String ip;
     private int connectionPort;
     private RunOnThread runOnThread;
     private Receive receive;
     private Buffer<String> receiveBuffer;
     private Socket socket;
-/*    private ObjectInputStream input;
-    private ObjectOutputStream output;*/
     private InputStream input;
     private OutputStream output;
     private DataInputStream dataIS;
@@ -56,7 +54,6 @@ public class TCPConnection extends Service{
     private String currentGroupID;
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private Timer timer;
     private String latitudeString;
     private String longitudeString;
 
@@ -65,11 +62,9 @@ public class TCPConnection extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         this.ip = intent.getStringExtra(IP);
         this.connectionPort = Integer.parseInt(intent.getStringExtra(PORT));
-        receiveBuffer = new Buffer<String>();       //have to convert an incoming string to a JSON Object
+        receiveBuffer = new Buffer<String>();
         runOnThread = new RunOnThread();
-        timer = new Timer();
         currentUser = new User("Axl Rose", new ArrayList<String>(), new ArrayList<String>());
-        //currentUser.addGroupName("Los Amigos"); //TEMP
         textMessages = new ArrayList<>();
         locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener() {
@@ -79,10 +74,9 @@ public class TCPConnection extends Service{
                 double y = location.getLongitude();
                 latitudeString = String.valueOf(x);
                 longitudeString = String.valueOf(y);
-                //Log.d("Pos: ", "Lat=" + y + ",    Long=" + x);
-                if(currentGroupID!=null) {
-                    Log.d(TAG, "onLocationChanged: Sending coordinates");
-                    sendMessage(JSONHandler.createJSONSetCurrentPosition(new String[]{currentGroupID, latitudeString, longitudeString}));
+                for (int i = 0; i < currentUser.getNbrOfGroups(); i++) {
+                    Log.d(TAG, "onLocationChanged: Sending coordinates for group"+String.valueOf(i));
+                    sendMessage(JSONHandler.createJSONSetCurrentPosition(new String[]{currentUser.getGroupID(i), longitudeString, latitudeString}));
                 }
             }
 
@@ -101,14 +95,9 @@ public class TCPConnection extends Service{
 
             }
         };
-        /*textMessages.add(new TextMessage("Los Amigos", "Clas", "hey everyone!", null)); //TEMP
-        textMessages.add(new TextMessage("Los Amigos", "Britta", "hey Clas!", null));
-        textMessages.add(new TextMessage("Los Amigos", "Clas", "This app rocks!", null));
-        textMessages.add(new TextMessage("Los Amigos", "Britta", "No it sucks!", null));*/
         Log.d(TAG, "onStartCommand: Initializing...");
-        return Service.START_STICKY;            //LU
+        return Service.START_NOT_STICKY;            //LU, was START_STICKY
     }
-
 
     @Nullable
     @Override
@@ -126,10 +115,10 @@ public class TCPConnection extends Service{
     public void startLocationHandler(MainActivity mainActivity, int requestCode) {
         switch (requestCode) {
             case REQUEST_ACCESS_FINE_LOCATION :
+                //Sending coordinates every 20sec
                 if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED) {
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 20000, 0, locationListener);
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 20000, 0, locationListener);
-
                 }
                 break;
         }
@@ -192,7 +181,6 @@ public class TCPConnection extends Service{
             try {
                 while (receive != null) {
                     Log.d(TAG, "run: receiving...");
-                    //result = (String) input.readObject();
                     result = (String)dataIS.readUTF();
                     receiveBuffer.put(result);
                     Log.d(TAG, "run: received!!!" + result);
@@ -211,23 +199,18 @@ public class TCPConnection extends Service{
                 Log.d(TAG, "run: Connecting to server...");
                 address = InetAddress.getByName(ip);
                 socket = new Socket(address, connectionPort);
-                /*input = new ObjectInputStream(socket.getInputStream());       //add these when picture implementation
-                output = new ObjectOutputStream(socket.getOutputStream());*/
                 input = socket.getInputStream();
                 dataIS = new DataInputStream(input);
                 output = socket.getOutputStream();
                 dataOS = new DataOutputStream(output);
                 dataOS.flush();
                 output.flush();
-                //receiveBuffer.put("CONNECTED");
                 receive = new Receive();                //start the receive thread. Running while app is running.
                 receive.start();
-                //startDummy();
                 Log.d(TAG, "run: CONNECTED");
             } catch (Exception e) { // SocketException, UnknownHostException
                 //exception = e;
                 Log.d(TAG, "run: "+ e);
-                //receiveBuffer.put("EXCEPTION");
             }
         }
     }
@@ -248,12 +231,9 @@ public class TCPConnection extends Service{
                     socket.close();
                 runOnThread.stop();
                 receive=null;
-                timer.cancel();
                 Log.d(TAG, "run: DISCONNECTED!!!");
-                //receiveBuffer.put("CLOSED");
             } catch(IOException e) {
                 //exception = e;
-                //receiveBuffer.put("EXCEPTION");
             }
         }
     }
@@ -267,27 +247,11 @@ public class TCPConnection extends Service{
 
         public void run() {
             try {
-                //Log.d(TAG, "run: Sending...");
                 dataOS.writeUTF(message);
                 dataOS.flush();
-                //Log.d(TAG, "run: SENT!!!");
             } catch (IOException e) {
                 Log.d(TAG, "run: exception: " + e);
-                //receiveBuffer.put("EXCEPTION");
             }
         }
     }
-
-/*    public void startDummy(){
-        Dummy dummy = new Dummy();
-        timer.schedule(dummy,0,5000);
-    }
-
-    private class Dummy extends TimerTask {
-        @Override
-        public void run() {
-            Log.d(TAG, "run: Timer: Sending my coordinates!");
-            //sendMessage("blabla");
-        }
-    }*/
 }

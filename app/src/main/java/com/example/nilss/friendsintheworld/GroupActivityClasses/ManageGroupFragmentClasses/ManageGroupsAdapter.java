@@ -2,6 +2,7 @@ package com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFrag
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ManageGroupsAdapter extends RecyclerView.Adapter<ManageGroupsAdapter.ViewHolder>{
+    private static final String TAG = "ManageGroupsAdapter";
     private List<String> currentGroupList;
     private GroupController groupController;
     private OnItemClickListener mListener;
@@ -60,6 +62,15 @@ public class ManageGroupsAdapter extends RecyclerView.Adapter<ManageGroupsAdapte
                         mListener.onItemClicked(pos);
                     }
                 }
+            });
+            itemView.setOnLongClickListener((View v)->{
+                if(mListener!=null){
+                    int pos = getAdapterPosition();
+                    if(pos!=RecyclerView.NO_POSITION){
+                        mListener.onItemLongClicked(pos);
+                    }
+                }
+                return true;
             });
         }
     }
