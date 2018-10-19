@@ -6,4 +6,6 @@
     <string name="enter_a_name_for_the_group">Enter a name for the group</string>
     <string name="commit">Commit</string>
     <string name="proceed">Proceed</string>
+    <string name="add_group">Add group</string>
+    <string name="available_groups">Available groups:</string>
 </resources>

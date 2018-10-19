@@ -64,6 +64,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         boolean moreThanOneCoordinate = false;
         if(requestCode==TAG_REQUEST && resultCode== Activity.RESULT_OK){
             ArrayList<String> coordinateList = data.getStringArrayListExtra("pins");
+            if(coordinateList.size()==0){
+                return;
+            }
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             MarkerOptions options = null;
             for (int i = 0; i < coordinateList.size(); i+=3) {

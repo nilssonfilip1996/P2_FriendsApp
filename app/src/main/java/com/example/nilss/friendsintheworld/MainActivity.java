@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onOptionsItemSelected: EN selected");
                 return true;
             case(R.id.item_swe):
-                setLocale("sv-rSE");
+                setLocale("sv");
                 Log.d(TAG, "onOptionsItemSelected: SV selected");
                 return true;
             default:
@@ -79,18 +79,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setLocale(String lang) {
-/*        Locale locale = new Locale(lang);
-        locale.setDefault(locale);
-        Configuration config = new Configuration();
-        config.setLocale(locale);
-        getBaseContext().getResources().updateConfiguration(config,getBaseContext().getResources().getDisplayMetrics());*/
+        Locale myLocale = new Locale(lang);
         Resources res = getResources();
-        // Change locale settings in the app.
         DisplayMetrics dm = res.getDisplayMetrics();
-        android.content.res.Configuration conf = res.getConfiguration();
-        conf.setLocale(new Locale(lang.toLowerCase())); // API 17+ only.
-        // Use conf.locale = new Locale(...) if targeting lower versions
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
         res.updateConfiguration(conf, dm);
+        Intent refresh = new Intent(this, MainActivity.class);
+        startActivity(refresh);
+        finish();
     }
 
     @Override

@@ -206,9 +206,13 @@ public class GroupController {
                 if(incommingLocationsList.get(i).getString(JSONHandler.KEY_GROUP).equals(currentGroupName)){
                     JSONArray jsonArray= incommingLocationsList.get(i).getJSONArray(JSONHandler.KEY_LOCATION);
                     for (int j = 0; j < jsonArray.length(); j++) {
-                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_MEMBER));
-                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LONGITUDE));
-                        coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LATITUDE));
+                        String longitude = jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LONGITUDE);
+                        String latitude = jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LATITUDE);
+                        if(!(longitude.equals("NaN") || latitude.equals("NaN"))){
+                            coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_MEMBER));
+                            coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LONGITUDE));
+                            coordinateList.add(jsonArray.getJSONObject(j).getString(JSONHandler.KEY_LATITUDE));
+                        }
                     }
                     Intent returnIntent = new Intent();
                     returnIntent.putStringArrayListExtra("pins",coordinateList);
