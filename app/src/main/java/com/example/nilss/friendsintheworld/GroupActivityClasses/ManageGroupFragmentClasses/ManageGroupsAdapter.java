@@ -1,5 +1,6 @@
 package com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.nilss.friendsintheworld.GroupActivityClasses.GroupController;
+import com.example.nilss.friendsintheworld.Pojos.Group;
 import com.example.nilss.friendsintheworld.R;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import java.util.List;
 
 public class ManageGroupsAdapter extends RecyclerView.Adapter<ManageGroupsAdapter.ViewHolder>{
     private static final String TAG = "ManageGroupsAdapter";
-    private List<String> currentGroupList;
+    private List<Group> groups;
     private GroupController groupController;
     private OnItemClickListener mListener;
 
@@ -25,9 +27,9 @@ public class ManageGroupsAdapter extends RecyclerView.Adapter<ManageGroupsAdapte
         mListener = listener;
     }
 
-    public ManageGroupsAdapter(GroupController groupController, ArrayList<String> currentGroupsList) {
+    public ManageGroupsAdapter(GroupController groupController, ArrayList<Group> groups) {
         this.groupController = groupController;
-        this.currentGroupList = currentGroupsList;
+        this.groups = groups;
     }
 
     @NonNull
@@ -41,12 +43,19 @@ public class ManageGroupsAdapter extends RecyclerView.Adapter<ManageGroupsAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        viewHolder.groupNametv.setText(currentGroupList.get(i));
+        if(!groups.get(i).isUserMember()){
+            viewHolder.groupNametv.setBackgroundResource(R.drawable.rounded_rectangle_orange);
+        }
+        else {
+            viewHolder.groupNametv.setBackground(null);
+        }
+
+        viewHolder.groupNametv.setText(groups.get(i).getGroupName());
     }
 
     @Override
     public int getItemCount() {
-        return currentGroupList.size();
+        return groups.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

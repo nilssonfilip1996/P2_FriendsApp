@@ -19,6 +19,8 @@ import android.util.Log;
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
 import com.example.nilss.friendsintheworld.Pojos.User;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -56,6 +58,7 @@ public class TCPConnection extends Service{
     private LocationListener locationListener;
     private String latitudeString;
     private String longitudeString;
+    private ArrayList<JSONObject> incommingLocationsList;
 
     //You can say that this is the "constructor".
     @Override
@@ -66,6 +69,7 @@ public class TCPConnection extends Service{
         runOnThread = new RunOnThread();
         currentUser = new User("Axl Rose", new ArrayList<String>(), new ArrayList<String>());
         textMessages = new ArrayList<>();
+        incommingLocationsList = new ArrayList<>();
         locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
@@ -78,6 +82,7 @@ public class TCPConnection extends Service{
                     Log.d(TAG, "onLocationChanged: Sending coordinates for group"+String.valueOf(i));
                     sendMessage(JSONHandler.createJSONSetCurrentPosition(new String[]{currentUser.getGroupID(i), longitudeString, latitudeString}));
                 }
+                sendMessage(JSONHandler.createJSONRequestCurrentGroups());
             }
 
             @Override
@@ -123,6 +128,14 @@ public class TCPConnection extends Service{
                 break;
         }
 
+    }
+
+    public ArrayList<JSONObject> getIncommingLocationsList() {
+        return incommingLocationsList;
+    }
+
+    public void setIncommingLocationsList(ArrayList<JSONObject> incommingLocationsList) {
+        this.incommingLocationsList = incommingLocationsList;
     }
 
     public String getLatitudeString() {

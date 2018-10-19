@@ -81,7 +81,10 @@ public class ChatFragment extends Fragment {
 
     private void initComponents(View view) {
         this.manageGroupsBtn = view.findViewById(R.id.manageGrpBtn);
-        manageGroupsBtn.setOnClickListener((View v)->groupController.show(GroupController.groupFragmentTag));
+        manageGroupsBtn.setOnClickListener((View v)-> {
+            groupController.updateManageGroupsFragment();
+            groupController.show(GroupController.groupFragmentTag);
+        });
         this.mapsBtn = view.findViewById(R.id.mapsBtn);
         this.sendMessageBtn = view.findViewById(R.id.sendMsgbtn);
         this.sendImagebtn = view.findViewById(R.id.sendImageBtn);

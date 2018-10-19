@@ -17,6 +17,7 @@ import com.example.nilss.friendsintheworld.GroupActivityClasses.ChatFragmentClas
 import com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFragmentClasses.ManageGroupsFragment;
 import com.example.nilss.friendsintheworld.JSONHandler;
 import com.example.nilss.friendsintheworld.MainActivity;
+import com.example.nilss.friendsintheworld.Pojos.Group;
 import com.example.nilss.friendsintheworld.Pojos.Message;
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
 import com.example.nilss.friendsintheworld.TCPConnection;
@@ -88,12 +89,29 @@ public class GroupController {
     private void initManageGroupsFragment() {
         //init recyclerview with available groups
         currentGroupsList = new ArrayList<>();
-        incommingLocationsList = new ArrayList<>();
+        //incommingLocationsList = new ArrayList<>();
 /*        currentGroupsList.add("Los Amigos"); //TEMP*/
         manageGroupsFragment.setGroupController(this);
         manageGroupsFragment.onInit(()->{
-            manageGroupsFragment.updateList(currentGroupsList);
+            //manageGroupsFragment.updateList(currentGroupsList);
+            updateManageGroupsFragment();
         });
+    }
+
+    public void updateManageGroupsFragment(){
+        ArrayList<Group> groups = new ArrayList<>();
+        boolean match = false;
+        for (int i = 0; i < currentGroupsList.size(); i++) {
+            for (int j = 0; j < currentUser.getNbrOfGroups(); j++) {
+                if(currentUser.getGroupName(j).equals(currentGroupsList.get(i))){
+                    match=true;
+                    break;
+                }
+            }
+            groups.add(new Group(currentGroupsList.get(i),match));
+            match=false;
+        }
+        manageGroupsFragment.updateList(groups);
     }
 
     //get ref to tcp service
@@ -111,6 +129,7 @@ public class GroupController {
             tcpConnection = ls.getService();
             currentUser = tcpConnection.getCurrentUser();
             textMessages = tcpConnection.getTextMessages();
+            incommingLocationsList = tcpConnection.getIncommingLocationsList();
             bound = true; //service bound
             Log.d(TAG, "connection: " + String.valueOf(tcpConnection!=null));
             receiveListener = new ReceiveListener();
@@ -127,6 +146,7 @@ public class GroupController {
         if(bound){
             tcpConnection.setCurrentUser(currentUser);
             tcpConnection.setTextMessages(textMessages);
+            tcpConnection.setIncommingLocationsList(incommingLocationsList);
             groupActivity.unbindService(serviceConn);
             receiveListener.stopListener();
             bound = false;
@@ -217,12 +237,12 @@ public class GroupController {
 
     private void removeGroup(String currentGroupID) {
         send(JSONHandler.TYPE_UNREGISTER, new String[]{currentGroupID});
-        send(JSONHandler.TYPE_GROUPS, null);
+        //send(JSONHandler.TYPE_GROUPS, null);
     }
 
     public void addGroup(String groupName) {
         send(JSONHandler.TYPE_REGISTER, new String[]{groupName,currentUser.getName()});
-        send(JSONHandler.TYPE_GROUPS, null);
+        //send(JSONHandler.TYPE_GROUPS, null);
     }
 
     public String getCurrentUserName() {
@@ -296,6 +316,15 @@ public class GroupController {
                         tcpConnection.setCurrentGroupID(currentGroupID);
                         currentGroupName = jsonObject.getString(JSONHandler.KEY_GROUP);
                         Log.d(TAG, "processIncMessage: users groups:" + currentUser.toString());
+                        send(JSONHandler.TYPE_GROUPS, null);
+                        groupActivity.runOnUiThread(()-> {
+                            try {
+                                Toast.makeText(groupActivity, "Added to group: "+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
                         //Show on the UI which group they currently belong to
                         //Log.d(TAG, "processIncMessage: group: " + currentUser.getGroupID());
                         break;
@@ -303,6 +332,14 @@ public class GroupController {
                         //remove group from users current groups.
                         currentUser.removeGroup(jsonObject.getString(JSONHandler.KEY_GROUP_ID));
                         Log.d(TAG, "processIncMessage: removed from groupId: " + jsonObject.getString(JSONHandler.KEY_GROUP_ID));
+                        send(JSONHandler.TYPE_GROUPS, null);
+                        groupActivity.runOnUiThread(()-> {
+                            try {
+                                Toast.makeText(groupActivity, "Removed from group: "+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        });
                         //Show on the UI which group they currently belong to
                         break;
                     case(JSONHandler.TYPE_MEMBERS):
@@ -341,7 +378,8 @@ public class GroupController {
                         currentUser.setGroupNames(usersUpdatedGroups);
                         currentUser.setGroupIDs(usersUpdatedGroupsID);
                         groupActivity.runOnUiThread(()->{
-                            manageGroupsFragment.updateList(currentGroupsList);
+                            //manageGroupsFragment.updateList(currentGroupsList);
+                            updateManageGroupsFragment();
                         });
 
                         break;
@@ -360,6 +398,10 @@ public class GroupController {
                                 incommingLocationsList.remove(i);
                                 incommingLocationsList.add(jsonObject);
                         }
+                        groupActivity.runOnUiThread(()-> {
+                            Toast.makeText(groupActivity, "Received new locations!", Toast.LENGTH_SHORT).show();
+                        });
+
                         //incommingLocationsList.add(jsonObject);
 
                         break;
@@ -398,7 +440,9 @@ public class GroupController {
                         String uploadPort = jsonObject.getString(JSONHandler.KEY_PORT);
                         UploadImage uploadImage = new UploadImage();
                         uploadImage.execute(imageId,uploadPort);
-                        chatFragment.clearInput();
+                        groupActivity.runOnUiThread(()->{
+                            chatFragment.clearInput();
+                        });
                         break;
                     case(JSONHandler.TYPE_IMAGECHAT):
                         Log.d(TAG, "processIncMessage: An image is ready to be downloaded!");

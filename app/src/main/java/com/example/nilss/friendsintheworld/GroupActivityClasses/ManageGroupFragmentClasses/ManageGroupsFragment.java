@@ -16,6 +16,7 @@ import android.widget.EditText;
 
 import com.example.nilss.friendsintheworld.GroupActivityClasses.GroupController;
 import com.example.nilss.friendsintheworld.OnCreateViewLIstener;
+import com.example.nilss.friendsintheworld.Pojos.Group;
 import com.example.nilss.friendsintheworld.R;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 public class ManageGroupsFragment extends Fragment {
     private static final String TAG = "ManageGroupsFragment";
     private GroupController groupController;
-    private ArrayList<String> currentGroupsList;    //groupnames
+    private ArrayList<Group> groups;    //groupnames
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private ManageGroupsAdapter adapter;
@@ -48,7 +49,7 @@ public class ManageGroupsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_manage_groups, container, false);
-        currentGroupsList = new ArrayList<>();
+        groups = new ArrayList<>();
         initRecycler(view);
         initComponents(view);
         if(mListener != null){
@@ -67,20 +68,20 @@ public class ManageGroupsFragment extends Fragment {
         this.mLayoutManager = new LinearLayoutManager(getActivity());
         this.recyclerView.setLayoutManager(mLayoutManager);
         // specify an adapter. MainAdapter is a selfwritten class.
-        adapter = new ManageGroupsAdapter(groupController, currentGroupsList);
+        adapter = new ManageGroupsAdapter(groupController, groups);
         recyclerView.setAdapter(adapter);
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClicked(int position) {
                 //group in list clicked!
-                Log.d(TAG, "onItemClicked: " + currentGroupsList.get(position));
-                groupController.groupInListClicked(currentGroupsList.get(position), true);
+                Log.d(TAG, "onItemClicked: " + groups.get(position).getGroupName());
+                groupController.groupInListClicked(groups.get(position).getGroupName(), true);
             }
 
             @Override
             public void onItemLongClicked(int position) {
-                Log.d(TAG, "onItemClicked: " + currentGroupsList.get(position));
-                groupController.groupInListClicked(currentGroupsList.get(position), false);
+                Log.d(TAG, "onItemClicked: " + groups.get(position).getGroupName());
+                groupController.groupInListClicked(groups.get(position).getGroupName(), false);
             }
         });
     }
@@ -110,9 +111,15 @@ public class ManageGroupsFragment extends Fragment {
         this.groupController = groupController;
     }
 
-    public void updateList(ArrayList<String> groupList) {
+/*    public void updateList(ArrayList<String> groupList) {
         currentGroupsList.clear();
         currentGroupsList.addAll(groupList);
+        adapter.notifyDataSetChanged();
+    }*/
+
+    public void updateList(ArrayList<Group> groups) {
+        this.groups.clear();
+        this.groups.addAll(groups);
         adapter.notifyDataSetChanged();
     }
 
