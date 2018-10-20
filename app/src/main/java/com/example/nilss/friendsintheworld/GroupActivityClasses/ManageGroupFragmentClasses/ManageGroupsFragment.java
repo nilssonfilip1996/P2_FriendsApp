@@ -2,6 +2,8 @@ package com.example.nilss.friendsintheworld.GroupActivityClasses.ManageGroupFrag
 
 
 import android.app.AlertDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -97,6 +99,7 @@ public class ManageGroupsFragment extends Fragment {
             Button commitBtn = (Button) mView.findViewById(R.id.commitGroupBtn);
             mBuilder.setView(mView);
             AlertDialog dialog = mBuilder.create();
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             commitBtn.setOnClickListener((View v2)->{
                 //sent to controller for validation.
                 Log.d(TAG, "initComponents: Groupname: " + groupNameEtv.getText().toString());
@@ -110,12 +113,6 @@ public class ManageGroupsFragment extends Fragment {
     public void setGroupController(GroupController groupController){
         this.groupController = groupController;
     }
-
-/*    public void updateList(ArrayList<String> groupList) {
-        currentGroupsList.clear();
-        currentGroupsList.addAll(groupList);
-        adapter.notifyDataSetChanged();
-    }*/
 
     public void updateList(ArrayList<Group> groups) {
         this.groups.clear();

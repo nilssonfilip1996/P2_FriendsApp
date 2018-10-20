@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/rounded_rectangle_orange"
+    android:background="#FF6E00"
     tools:context=".MainActivity">
 
 
@@ -24,11 +24,15 @@
             android:textAlignment="center"
             android:hint="Enter a username"/>-->
         <Button
-            android:layout_gravity="center"
+            android:id="@+id/proceedBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/proceed"
-            android:id="@+id/proceedBtn"/>
+            android:layout_gravity="center"
+            android:fontFamily="casual"
+            android:textSize="30sp"
+            android:padding="10dp"
+            android:background="@drawable/layout_bg"
+            android:text="@string/proceed" />
 
     </LinearLayout>
 

@@ -20,6 +20,7 @@ import com.example.nilss.friendsintheworld.MainActivity;
 import com.example.nilss.friendsintheworld.Pojos.Group;
 import com.example.nilss.friendsintheworld.Pojos.Message;
 import com.example.nilss.friendsintheworld.Pojos.TextMessage;
+import com.example.nilss.friendsintheworld.R;
 import com.example.nilss.friendsintheworld.TCPConnection;
 import com.example.nilss.friendsintheworld.Pojos.User;
 
@@ -224,14 +225,6 @@ public class GroupController {
                 e.printStackTrace();
             }
         }
-/*        ArrayList<String> coordinateList = new ArrayList<>();
-        for (int i = 0; i < currentMessageList.size(); i++) {
-            //coordinateList.add()
-        }
-        Intent returnIntent = new Intent();
-        returnIntent.putStringArrayListExtra(("pins",result);
-        setResult(Activity.RESULT_OK,returnIntent);
-        finish();*/
     }
 
     public void send(String type,String[] values){
@@ -271,7 +264,7 @@ public class GroupController {
 
     public void sendMessage(String textMessage, byte[] imageArray){
         if((textMessage.equals("")) && (imageArray==null)){
-            Toast.makeText(groupActivity, "Message must contain atleast a message of image!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(groupActivity, R.string.message_warning, Toast.LENGTH_SHORT).show();
             return;
         }
         //only a textmessage to be sent
@@ -323,7 +316,7 @@ public class GroupController {
                         send(JSONHandler.TYPE_GROUPS, null);
                         groupActivity.runOnUiThread(()-> {
                             try {
-                                Toast.makeText(groupActivity, "Added to group: "+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(groupActivity, groupActivity.getString(R.string.added_to_group)+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -339,7 +332,7 @@ public class GroupController {
                         send(JSONHandler.TYPE_GROUPS, null);
                         groupActivity.runOnUiThread(()-> {
                             try {
-                                Toast.makeText(groupActivity, "Removed from group: "+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(groupActivity, groupActivity.getString(R.string.removed_from_group)+ jsonObject.getString(JSONHandler.KEY_GROUP_ID), Toast.LENGTH_SHORT).show();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -403,7 +396,7 @@ public class GroupController {
                                 incommingLocationsList.add(jsonObject);
                         }
                         groupActivity.runOnUiThread(()-> {
-                            Toast.makeText(groupActivity, "Received new locations!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(groupActivity, R.string.new_incoming_locations, Toast.LENGTH_SHORT).show();
                         });
 
                         //incommingLocationsList.add(jsonObject);

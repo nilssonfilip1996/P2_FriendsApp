@@ -19,13 +19,13 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Manage groups"/>
+            android:text="@string/manage_groups"/>
         <Button
             android:id="@+id/mapsBtn"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Map view"/>
+            android:text="@string/map_view"/>
 
     </LinearLayout>
 
@@ -55,7 +55,7 @@
                 android:layout_width="match_parent"
                 android:background="@drawable/layout_bg"
                 android:padding="5dp"
-                android:hint="Enter message"
+                android:hint="@string/enter_message"
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
 
@@ -76,7 +76,7 @@
                     android:id="@+id/sendMsgbtn"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:text="Send"
+                    android:text="@string/send"
                     android:layout_height="match_parent" />
             </LinearLayout>
 

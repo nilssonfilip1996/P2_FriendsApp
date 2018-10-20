@@ -36,9 +36,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         initMap();
-/*        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ACCESS_FINE_LOCATION);
-        }*/
         initListeners();
     }
 
@@ -99,30 +96,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
-
-    private void moveCamera(LatLng latLng, float zoom, String title){
-        Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-
-        //LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        if(!title.equals("My Location")){
-            MarkerOptions options = new MarkerOptions()
-                    .position(latLng)
-                    .title(title);
-            mMap.addMarker(options);
-        }
-
-        //hideSoftKeyboard();
-    }
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-    }
-
-    private void addMarker(LatLng latLng){
-        MarkerOptions mo = new MarkerOptions().position(latLng).title("My position");
-        mMap.addMarker(mo);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 3));
     }
 }

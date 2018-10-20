@@ -2,17 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/rounded_rectangle_orange"
     android:padding="5dp">
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginTop="5dp"
+        android:fontFamily="casual"
         android:text="@string/add_group"
-        android:textStyle="bold"
         android:textSize="25sp"
-        android:layout_gravity="center"/>
+        android:textStyle="bold" />
     
     <EditText
         android:id="@+id/groupNameetv"
@@ -21,12 +23,14 @@
         android:layout_marginTop="10dp"
         android:hint="@string/enter_a_name_for_the_group"
         android:ems="10"/>
-    
+
     <Button
         android:id="@+id/commitGroupBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/layout_bg"
         android:layout_marginTop="10dp"
-        android:text="@string/commit"/>
+        android:fontFamily="casual"
+        android:text="@string/commit" />
 
 </LinearLayout>

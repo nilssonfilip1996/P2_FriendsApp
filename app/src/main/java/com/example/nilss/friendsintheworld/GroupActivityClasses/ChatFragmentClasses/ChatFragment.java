@@ -215,6 +215,7 @@ public class ChatFragment extends Fragment {
     }
 
     public void clearInput() {
+        isPictureTaken=false;
         takenPhotoIv.setImageDrawable(null);
         inputMessageEtv.setText("");
     }

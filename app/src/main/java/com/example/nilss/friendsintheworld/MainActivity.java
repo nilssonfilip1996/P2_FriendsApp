@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private TCPConnection connection;
     private ServiceConn serviceConn;
     private boolean TCPServiceIsBound;
+    private Button proceedBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setLocale(String lang) {
+/*    private void setLocale(String lang) {
         Locale myLocale = new Locale(lang);
         Resources res = getResources();
         DisplayMetrics dm = res.getDisplayMetrics();
@@ -88,6 +89,32 @@ public class MainActivity extends AppCompatActivity {
         Intent refresh = new Intent(this, MainActivity.class);
         startActivity(refresh);
         finish();
+    }*/
+
+    public void setLocale(String lang) {
+
+        Locale myLocale = new Locale(lang);
+        Resources res = getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        conf.locale = myLocale;
+        res.updateConfiguration(conf, dm);
+        onConfigurationChanged(conf);
+/*Intent refresh = new Intent(this, AndroidLocalize.class);
+startActivity(refresh);*/
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // refresh your views here
+        proceedBtn.setText(R.string.proceed);
+        super.onConfigurationChanged(newConfig);
+// Checks the active language
+        if (newConfig.locale == Locale.ENGLISH) {
+            Toast.makeText(this, "English", Toast.LENGTH_SHORT).show();
+        } else if (newConfig.locale.equals("sv")){
+            Toast.makeText(this, "French", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -103,20 +130,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void initMap() {
         //EditText userNameEtv = (EditText) findViewById(R.id.usernameEtv);
-        Button btnMap = (Button) findViewById(R.id.proceedBtn);
-        btnMap.setOnClickListener(new View.OnClickListener() {
+        proceedBtn = (Button) findViewById(R.id.proceedBtn);
+        proceedBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
                 startActivity(intent);
-/*                if(userNameEtv.getText().equals("")) {
-                    Toast.makeText(MainActivity.this, "Please specify a username!", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                    startActivity(intent);
-                }*/
-
             }
         });
     }

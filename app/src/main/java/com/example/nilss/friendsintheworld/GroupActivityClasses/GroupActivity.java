@@ -22,10 +22,6 @@ public class GroupActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         groupController.onDestroy();
-/*        Intent returnIntent = new Intent();
-        returnIntent.putStringArrayListExtra(("pins",result);
-        setResult(Activity.RESULT_OK,returnIntent);
-        finish();*/
         super.onDestroy();
     }
 }
