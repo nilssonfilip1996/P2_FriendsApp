@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FriendsInTheWorld</string>
+    <string name="enter_a_name_for_the_group">Enter a name for the group</string>
+    <string name="commit">Commit</string>
+    <string name="proceed">Proceed</string>
+    <string name="add_group">Add group</string>
+    <string name="available_groups">Available groups:</string>
+    <string name="manage_groups">Manage groups</string>
+    <string name="map_view">Map view</string>
+    <string name="enter_message">Enter message</string>
+    <string name="send">Send</string>
+    <string name="received_message_name_dummy">John Doe</string>
+    <string name="received_message_dummy_content">hi man, how are you?</string>
+    <string name="english">English</string>
+    <string name="swedish">Swedish</string>
+    <string name="message_warning">Message must contain atleast a message or image!</string>
+    <string name="added_to_group">Added to group: </string>
+    <string name="removed_from_group">Removed from group: </string>
+    <string name="new_incoming_locations">Received new locations!</string>
+</resources>

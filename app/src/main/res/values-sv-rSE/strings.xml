@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FriendsInTheWorld</string>
+    <string name="enter_a_name_for_the_group">Ange ett namn för gruppen</string>
+    <string name="commit">Skicka</string>
+    <string name="proceed">Fortsätt</string>
+    <string name="add_group">Lägg till grupp</string>
+    <string name="available_groups">Tillgängliga grupper</string>
+    <string name="manage_groups">Grupphantering</string>
+    <string name="map_view">Kartvy</string>
+    <string name="enter_message">Skriv meddelande</string>
+    <string name="send">Skicka</string>
+    <string name="received_message_name_dummy">John Doe</string>
+    <string name="received_message_dummy_content">hi man, how are you?</string>
+    <string name="english">Engelska</string>
+    <string name="swedish">Svenska</string>
+    <string name="message_warning">Meddelandet måste innehålla minst en bild eller ett textmeddelande!</string>
+    <string name="added_to_group">Lades till i gruppen: </string>
+    <string name="removed_from_group">Togs bort från gruppen: </string>
+    <string name="new_incoming_locations">Nya uppdaterade koordinater!</string>
+</resources>

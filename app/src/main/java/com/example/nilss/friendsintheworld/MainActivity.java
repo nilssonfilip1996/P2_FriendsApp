@@ -79,20 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-/*    private void setLocale(String lang) {
-        Locale myLocale = new Locale(lang);
-        Resources res = getResources();
-        DisplayMetrics dm = res.getDisplayMetrics();
-        Configuration conf = res.getConfiguration();
-        conf.locale = myLocale;
-        res.updateConfiguration(conf, dm);
-        Intent refresh = new Intent(this, MainActivity.class);
-        startActivity(refresh);
-        finish();
-    }*/
-
     public void setLocale(String lang) {
-
         Locale myLocale = new Locale(lang);
         Resources res = getResources();
         DisplayMetrics dm = res.getDisplayMetrics();
@@ -100,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
         conf.locale = myLocale;
         res.updateConfiguration(conf, dm);
         onConfigurationChanged(conf);
-/*Intent refresh = new Intent(this, AndroidLocalize.class);
-startActivity(refresh);*/
     }
 
     @Override
@@ -109,7 +94,7 @@ startActivity(refresh);*/
         // refresh your views here
         proceedBtn.setText(R.string.proceed);
         super.onConfigurationChanged(newConfig);
-// Checks the active language
+        // Checks the active language
         if (newConfig.locale == Locale.ENGLISH) {
             Toast.makeText(this, "English", Toast.LENGTH_SHORT).show();
         } else if (newConfig.locale.equals("sv")){
